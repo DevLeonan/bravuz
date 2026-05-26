@@ -244,23 +244,22 @@
                 </ol>
             </div>
             
-            <form action="/painel/produtos/" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="acao" value="importar_csv">
-                
-                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-blue-300 border-dashed rounded cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors mb-4">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <i class="fa-solid fa-file-arrow-up text-3xl text-blue-400 mb-2"></i>
-                        <p class="text-xs text-blue-800 font-medium"><span class="font-bold text-black">Selecione o arquivo .CSV</span></p>
-                    </div>
-                    <input type="file" name="arquivo_csv" accept=".csv" required class="hidden" />
-                </label>
-                
-                <div class="flex justify-end gap-3">
-                    <button type="button" onclick="fecharModalCsv()" class="px-6 py-2 text-xs font-bold uppercase text-zinc-600 bg-zinc-200 hover:bg-zinc-300 rounded">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 text-xs font-bold uppercase text-white bg-blue-600 hover:bg-blue-700 rounded shadow-md">Importar Peças</button>
-                </div>
-            </form>
+            <form method="POST" action="/painel/produtos/" enctype="multipart/form-data" class="space-y-4">
+				{% csrf_token %}
+				<input type="hidden" name="acao" value="importar_csv">
+				
+				<div>
+					<label class="block text-xs font-bold uppercase tracking-wider mb-2">1. Selecione a planilha (.CSV)</label>
+					<input type="file" name="arquivo_csv" accept=".csv" required class="border p-2 w-full">
+				</div>
+
+				<div>
+					<label class="block text-xs font-bold uppercase tracking-wider mb-2">2. Selecione as Fotos Compactadas (.ZIP) - Opcional</label>
+					<input type="file" name="arquivo_zip" accept=".zip" class="border p-2 w-full">
+				</div>
+
+				<button type="submit" class="bg-black text-white px-6 py-3 font-bold uppercase tracking-widest text-xs">Iniciar Importação em Lote</button>
+			</form>
         </div>
     </div>
 

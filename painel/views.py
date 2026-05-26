@@ -12,6 +12,9 @@ from decimal import Decimal, InvalidOperation
 import csv
 import io
 import os 
+import zipfile # NOVO: Para descompactar as fotos na nuvem
+import tempfile # NOVO: Para criar uma pasta temporária segura
+import shutil # NOVO: Para limpar os arquivos temporários depois
 
 def checar_admin(user):
     return user.is_authenticated and user.is_staff
@@ -55,10 +58,9 @@ def gerenciar_produtos(request):
             preco_promocional = request.POST.get('preco_promocional') or None
             imagem = request.FILES.get('imagem')
             estoque = request.POST.get('estoque', 0)
-            genero = request.POST.get('genero', 'U') # Padrão Unissex no manual
+            genero = request.POST.get('genero', 'U')
             
             categoria = Categoria.objects.get(id=categoria_id)
-            
             Produto.objects.create(
                 nome=nome, preco=preco, estoque=estoque, genero=genero,
                 categoria=categoria, descricao="Adicionado via Painel Bravus",
@@ -75,7 +77,6 @@ def gerenciar_produtos(request):
         elif acao == 'editar':
             produto_id = request.POST.get('produto_id')
             produto = Produto.objects.get(id=produto_id)
-            
             produto.nome = request.POST.get('nome')
             produto.preco = request.POST.get('preco')
             produto.estoque = request.POST.get('estoque', 0)
@@ -85,10 +86,8 @@ def gerenciar_produtos(request):
             
             categoria_id = request.POST.get('categoria')
             produto.categoria = Categoria.objects.get(id=categoria_id)
-            
             nova_imagem = request.FILES.get('imagem')
             if nova_imagem: produto.imagem = nova_imagem
-                
             produto.save()
             return redirect('/painel/produtos/')
 
@@ -96,9 +95,33 @@ def gerenciar_produtos(request):
             Produto.objects.all().delete()
             return redirect('/painel/produtos/')
             
+        # ========================================================
+        # MOTOR DE IMPORTAÇÃO CONJUGADO (CSV + IMAGENS EM ZIP)
+        # ========================================================
         elif acao == 'importar_csv':
             arquivo_csv = request.FILES.get('arquivo_csv')
+            arquivo_zip = request.FILES.get('arquivo_zip') # Captura o ZIP de fotos
+            
             if arquivo_csv and arquivo_csv.name.endswith('.csv'):
+                pasta_temp_extracao = None
+                fotos_mapeadas = {}
+
+                # Se o usuário enviou um ZIP, vamos extrair na memória do servidor temporariamente
+                if arquivo_zip and arquivo_zip.name.endswith('.zip'):
+                    pasta_temp_extracao = tempfile.mkdtemp()
+                    try:
+                        with zipfile.ZipFile(arquivo_zip, 'r') as zip_ref:
+                            zip_ref.extractall(pasta_temp_extracao)
+                        
+                        # Mapeia onde está cada foto dentro do ZIP (varre subpastas se houver)
+                        for root, _, arquivos in os.walk(pasta_temp_extracao):
+                            for arq in arquivos:
+                                if arq.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                                    fotos_mapeadas[arq.lower()] = os.path.join(root, arq)
+                        print(f"📦 Mapeadas {len(fotos_mapeadas)} fotos dentro do ZIP.")
+                    except Exception as erro_zip:
+                        print(f"❌ Erro ao ler arquivo ZIP: {erro_zip}")
+
                 try:
                     try:
                         dataset = arquivo_csv.read().decode('utf-8-sig')
@@ -121,9 +144,7 @@ def gerenciar_produtos(request):
                             if ',' in preco_str and '.' in preco_str: preco_str = preco_str.replace('.', '')
                             preco_str = preco_str.replace(',', '.').strip()
                             nome_cat = linha[2].strip()
-                            caminho_imagem = linha[3].strip() if len(linha) > 3 else ""
-                            
-                            # Captura o Gênero da 5ª coluna
+                            caminho_imagem_original = linha[3].strip() if len(linha) > 3 else ""
                             genero_csv = linha[4].strip().upper() if len(linha) > 4 else 'U'
                             if genero_csv not in ['M', 'F', 'U']: genero_csv = 'U'
                             
@@ -134,22 +155,32 @@ def gerenciar_produtos(request):
                                 slug_cat = nome_cat.lower().strip().replace(' ', '-')
                                 categoria, _ = Categoria.objects.get_or_create(slug=slug_cat, defaults={'nome': nome_cat.title()})
                                 
+                                # Cria o produto
                                 produto_criado = Produto.objects.create(
                                     nome=nome_peca, preco=preco_final, categoria=categoria,
                                     estoque=10, genero=genero_csv, descricao="Importado via CSV"
                                 )
                                 
-                                if caminho_imagem and os.path.exists(caminho_imagem):
-                                    with open(caminho_imagem, 'rb') as f:
-                                        nome_arquivo_foto = os.path.basename(caminho_imagem)
-                                        produto_criado.imagem.save(nome_arquivo_foto, File(f), save=True)
+                                # ASSOCIAÇÃO INTELIGENTE DA FOTO:
+                                # Pega apenas o nome do arquivo (ex: blusa.jpg) ignorando o C:\Users\...
+                                nome_arquivo_foto = os.path.basename(caminho_imagem_original).lower()
                                 
-                                print(f"✅ Sucesso na linha {linha_atual}: {nome_peca}")
+                                if nome_arquivo_foto in fotos_mapeadas:
+                                    caminho_real_foto = fotos_mapeadas[nome_arquivo_foto]
+                                    with open(caminho_real_foto, 'rb') as f:
+                                        produto_criado.imagem.save(os.path.basename(caminho_real_foto), File(f), save=True)
+                                    print(f"✅ Sucesso na linha {linha_atual}: {nome_peca} (Com Imagem)")
+                                else:
+                                    print(f"✅ Sucesso na linha {linha_atual}: {nome_peca} (Sem Imagem - não encontrada no ZIP)")
+                                    
                             except Exception as erro_linha:
                                 print(f"❌ Erro na linha {linha_atual} ({nome_peca}): {erro_linha}")
                                 continue
-                except Exception as e:
-                    print(f"🚨 ERRO FATAL: {e}")
+                finally:
+                    # Segurança: Limpa os arquivos temporários criados para não encher o disco da Railway
+                    if pasta_temp_extracao and os.path.exists(pasta_temp_extracao):
+                        shutil.rmtree(pasta_temp_extracao)
+                        
             return redirect('/painel/produtos/')
 
     try:
@@ -157,7 +188,7 @@ def gerenciar_produtos(request):
     except InvalidOperation:
         Produto.objects.all().delete()
         produtos = []
-        print("🚨 SISTEMA DE AUTOCURA ATIVADO: Catálogo expurgado.")
+        print("🚨 SISTEMA DE AUTOCURA ATIVADO.")
 
     categorias = Categoria.objects.all()
     return render(request, 'painel/produtos.html', {'produtos': produtos, 'categorias': categorias})

@@ -6,25 +6,23 @@ from django.conf.urls.static import static
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 
-# Função hacker para forçar a criação do Admin
 def forcar_admin_view(request):
     Usuario = get_user_model()
     try:
-        # Verifica se já existe (usando o email, que costuma ser o padrão de e-commerces)
         if Usuario.objects.filter(email='admin@bravuz.com').exists():
-            return HttpResponse("⚠️ O admin JÁ EXISTE. O login é o email: <b>admin@bravuz.com</b> e a senha: <b>SenhaForte2026</b>")
+            return HttpResponse("⚠️ O admin JÁ EXISTE. Faça o login com o email: <b>admin@bravuz.com</b> e a senha: <b>SenhaForte2026</b>")
         
-        # Tenta criar o superuser
+        # Criamos o admin passando CPF e Telefone fictícios para passar na validação do seu modelo
         Usuario.objects.create_superuser(
             email='admin@bravuz.com', 
             password='SenhaForte2026',
-            username='bravusadmin' # Passamos o username caso seu modelo ainda exija
+            username='bravusadmin',
+            cpf='03037190019',      # CPF fictício para destravar o banco
         )
-        return HttpResponse("✅ SUCESSO! Admin criado AGORA. O login é o email: <b>admin@bravuz.com</b> e a senha: <b>SenhaForte2026</b>")
+        return HttpResponse("✅ SUCESSO! Admin criado com campos preenchidos. Login: <b>admin@bravuz.com</b> e senha: <b>SenhaForte2026</b>")
     
     except Exception as erro:
-        # Se o banco de dados recusar, ele vai mostrar o erro exato na tela!
-        return HttpResponse(f"❌ DEU ERRO no banco de dados. O motivo foi: <br><br> <b>{str(erro)}</b>")
+        return HttpResponse(f"❌ ERRO AO CRIAR: <br><br> <b>{str(erro)}</b>")
 
 urlpatterns = [
     path('', vitrine_view, name='home'),
@@ -35,7 +33,6 @@ urlpatterns = [
     path('api/pagamentos/', include('pagamentos.urls')), 
     path('clientes/', include('clientes.urls')), 
     
-    # A nossa Rota Secreta
     path('criar-admin-secreto/', forcar_admin_view),
 ]
 

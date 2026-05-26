@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bravus | Finalizar Compra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased flex flex-col min-h-screen">
+
+    <header class="bg-black text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+                <i class="fa-solid fa-bolt text-yellow-400 text-2xl mr-2"></i>
+                <span class="font-bold text-2xl tracking-widest uppercase hidden sm:block">Bravus Checkout</span>
+            </a>
+            <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">Voltar à Vitrine</a>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl mx-auto px-4 py-10 w-full">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <div class="w-full lg:w-3/5">
+                
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Suas Peças</h2>
+                    <div id="lista-checkout" class="space-y-4">
+                        <div class="text-center py-6 text-gray-400">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                            <p class="mt-2 text-sm">Carregando itens...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Seus Dados e Entrega</h2>
+                    
+                    <div class="mb-6">
+                        <p class="text-gray-600"><span class="font-semibold text-gray-800">E-mail:</span> {{ request.user.email }}</p>
+                        <p class="text-gray-600"><span class="font-semibold text-gray-800">CPF:</span> {{ request.user.cpf }}</p>
+                    </div>
+                    
+                    <div class="mt-4 border-t border-gray-100 pt-5">
+                        <h3 class="text-sm font-bold text-gray-800 mb-2"><i class="fa-solid fa-truck-fast text-gray-400 mr-1"></i> Calcular Frete</h3>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="input-cep" placeholder="Digite seu CEP (só números)" maxlength="9" class="w-48 border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-gray-50">
+                            <button onclick="buscarFrete()" class="bg-gray-900 text-white px-5 rounded text-sm font-bold hover:bg-black transition-colors shadow-sm">Calcular</button>
+                        </div>
+                        <p id="texto-endereco" class="text-xs text-gray-500 italic">Digite o CEP para sabermos onde entregar a sua compra.</p>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-green-800 font-bold"><i class="fa-solid fa-wallet mr-1"></i> Saldo de Cashback</p>
+                                <p class="text-xs text-green-600">Disponível para abater nesta compra</p>
+                            </div>
+                            <span class="text-lg font-extrabold text-green-700" id="saldo-cashback" data-valor="{{ request.user.carteira_cashback }}">
+                                R$ {{ request.user.carteira_cashback }}
+                            </span>
+                        </div>
+                        
+                        {% if request.user.carteira_cashback > 0 %}
+                        <div class="mt-3 border-t border-green-200 pt-3">
+                            <label class="flex items-center cursor-pointer gap-2 select-none">
+                                <input type="checkbox" id="check-cashback" onchange="aplicarCashbackVisual()" class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer">
+                                <span class="text-sm font-bold text-green-900">Usar meu saldo agora</span>
+                            </label>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-2/5">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Resumo Financeiro</h2>
+                    
+                    <div class="space-y-3 text-sm text-gray-600 mb-6 border-b border-gray-100 pb-4">
+                        <div class="flex justify-between">
+                            <span>Subtotal Peças</span>
+                            <span id="checkout-subtotal" class="font-medium text-gray-900">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Entrega</span>
+                            <span id="texto-frete-resumo" class="font-medium text-blue-600 font-bold">Calcule o CEP</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-end mb-8">
+                        <span class="text-gray-900 font-bold text-lg">Total a Pagar</span>
+                        <div class="text-right">
+                            <span id="checkout-total" class="text-3xl font-extrabold text-black">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div id="area-pagamento">
+                        <button id="btn-gerar-pix" class="w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-gray-800 transition-colors shadow-lg flex items-center justify-center gap-2 text-lg transform hover:-translate-y-0.5">
+                            <i class="fa-brands fa-pix text-teal-400"></i> Pagar com Pix
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarResumo();
+        });
+
+        let totalCarrinho = 0;
+        let valorFreteGlobal = 0;
+        let totalComFrete = 0;
+        let saldoCashback = parseFloat(document.getElementById('saldo-cashback').getAttribute('data-valor').replace(',', '.')) || 0;
+        let vaiUsarCashback = false;
+        let checagemPagamentoIntervalo;
+
+        function carregarResumo() {
+            let carrinho = JSON.parse(localStorage.getItem('bravus_carrinho')) || [];
+            const lista = document.getElementById('lista-checkout');
+
+            if (carrinho.length === 0) {
+                lista.innerHTML = '<p class="text-gray-500 py-4 text-center font-medium">Seu carrinho está vazio.</p>';
+                document.getElementById('btn-gerar-pix').disabled = true;
+                document.getElementById('btn-gerar-pix').classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            lista.innerHTML = '';
+            totalCarrinho = 0;
+
+            carrinho.forEach((item, index) => {
+                totalCarrinho += item.preco;
+                
+                let imgHtml = item.imagem 
+                    ? `<img src="${item.imagem}" class="w-full h-full object-cover">` 
+                    : `<i class="fa-solid fa-shirt text-gray-300"></i>`;
+
+                lista.innerHTML += `
+                    <div class="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden border border-gray-200">
+                                ${imgHtml}
+                            </div>
+                            <span class="font-bold text-gray-800 text-sm">${item.nome}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold text-gray-900 text-sm">R$ ${item.preco.toFixed(2).replace('.', ',')}</span>
+                            <button onclick="removerItem(${index})" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            atualizarTotais();
+        }
+
+        function removerItem(index) {
+            let carrinho = JSON.parse(localStorage.getItem('bravus_carrinho')) || [];
+            carrinho.splice(index, 1);
+            localStorage.setItem('bravus_carrinho', JSON.stringify(carrinho));
+            carregarResumo();
+        }
+
+        async function buscarFrete() {
+            const cep = document.getElementById('input-cep').value.replace('-', '').trim();
+            const textoEndereco = document.getElementById('texto-endereco');
+            
+            if (cep.length < 8) {
+                textoEndereco.innerText = "Digite um CEP válido com 8 números.";
+                textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
+                return;
+            }
+
+            textoEndereco.innerText = "Consultando logística...";
+            textoEndereco.className = "text-xs text-blue-500 font-bold mt-1";
+
+            try {
+                const response = await fetch(`/api/loja/frete/${cep}/`);
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    valorFreteGlobal = data.valor_frete;
+                    textoEndereco.innerText = `${data.endereco} (Chega em ${data.prazo})`;
+                    textoEndereco.className = "text-xs text-green-600 font-bold mt-1";
+                    
+                    document.getElementById('texto-frete-resumo').innerText = `R$ ${valorFreteGlobal.toFixed(2).replace('.', ',')}`;
+                    document.getElementById('texto-frete-resumo').classList.replace('text-blue-600', 'text-gray-900');
+                    
+                    atualizarTotais();
+                } else {
+                    textoEndereco.innerText = data.erro || "CEP não encontrado.";
+                    textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
+                    valorFreteGlobal = 0;
+                    document.getElementById('texto-frete-resumo').innerText = `Calcule o CEP`;
+                    atualizarTotais();
+                }
+            } catch (error) {
+                textoEndereco.innerText = "Erro ao calcular frete. O servidor pode estar desligado.";
+                textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
+            }
+        }
+
+        function aplicarCashbackVisual() {
+            const checkbox = document.getElementById('check-cashback');
+            vaiUsarCashback = checkbox ? checkbox.checked : false;
+            atualizarTotais();
+        }
+
+        function atualizarTotais() {
+            document.getElementById('checkout-subtotal').innerText = `R$ ${totalCarrinho.toFixed(2).replace('.', ',')}`;
+            
+            let valorFinal = totalCarrinho + valorFreteGlobal; 
+            
+            if (vaiUsarCashback && saldoCashback > 0) {
+                if (saldoCashback >= valorFinal) {
+                    valorFinal = 1.00; // Regra Mercado Pago
+                } else {
+                    valorFinal = valorFinal - saldoCashback;
+                }
+            }
+
+            document.getElementById('checkout-total').innerText = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+            
+            if (vaiUsarCashback && saldoCashback > 0) {
+                document.getElementById('checkout-total').innerHTML += `<br><span class="text-sm text-green-500 font-normal">(- Cashback aplicado)</span>`;
+            }
+            
+            totalComFrete = valorFinal; 
+        }
+
+        document.getElementById('btn-gerar-pix').addEventListener('click', async function() {
+            if (valorFreteGlobal === 0) {
+                alert("Por favor, calcule o frete digitando seu CEP antes de pagar.");
+                document.getElementById('input-cep').focus();
+                return;
+            }
+
+            const btn = this;
+            const textoOriginalBtn = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75');
+
+            try {
+                // 1. Cria o Pedido no banco da Bravus
+                const resPedido = await fetch('/api/pagamentos/criar-pedido/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ 
+                        valor_total: totalComFrete, 
+                        usar_cashback: vaiUsarCashback,
+                        itens: JSON.parse(localStorage.getItem('bravus_carrinho')) || [] 
+                    })
+                });
+
+                const dadosPedido = await resPedido.json();
+                
+                if (!resPedido.ok) throw new Error(dadosPedido.erro || 'Falha ao registrar pedido.');
+
+                // 2. Aciona o Mercado Pago
+                const resPix = await fetch(`/api/pagamentos/criar-pix/${dadosPedido.pedido_id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+
+                const dadosPix = await resPix.json();
+
+                if (resPix.ok && dadosPix.status === 'sucesso') {
+                    localStorage.removeItem('bravus_carrinho');
+                    
+                    // Desenha a tela premium de QR Code
+                    document.getElementById('area-pagamento').innerHTML = `
+                        <div class="bg-white border-2 border-yellow-400 rounded-xl p-6 text-center shadow-lg animate-fade-in relative overflow-hidden">
+                            <div class="absolute inset-0 bg-yellow-50 opacity-50 z-0"></div>
+                            
+                            <div class="relative z-10">
+                                <h3 class="text-yellow-600 font-black uppercase tracking-widest text-xl mb-1">Aguardando PIX</h3>
+                                <p class="text-xs font-bold text-zinc-500 mb-4 uppercase tracking-wider">Pedido #${dadosPix.pedido_id}</p>
+                                
+                                <p class="text-sm text-zinc-600 mb-6 font-medium">Escaneie o QR Code abaixo no app do seu banco para liberar a compra.</p>
+                                
+                                <div class="bg-white p-2 rounded-lg shadow-sm border border-zinc-200 inline-block mb-6 relative">
+                                    <img src="data:image/jpeg;base64,${dadosPix.pix_qr_code_base64}" class="w-48 h-48">
+                                    <div class="absolute -right-3 -bottom-3 bg-teal-400 text-white w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-lg animate-bounce">
+                                        <i class="fa-brands fa-pix text-xl"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-left bg-zinc-50 p-4 rounded-lg border border-zinc-200 mb-6">
+                                    <p class="text-[10px] text-zinc-500 mb-2 font-black uppercase tracking-widest flex items-center justify-between">
+                                        Pix Copia e Cola 
+                                        <button onclick="copiarPix()" class="text-blue-500 hover:text-blue-700 transition-colors"><i class="fa-regular fa-copy"></i> Copiar</button>
+                                    </p>
+                                    <textarea id="texto-pix" readonly class="w-full text-xs p-3 bg-white border border-zinc-300 rounded text-zinc-600 outline-none resize-none h-16 focus:ring-1 focus:ring-yellow-400">${dadosPix.pix_copia_e_cola}</textarea>
+                                </div>
+
+                                <div class="flex items-center justify-center gap-2 text-zinc-500">
+                                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                    <span class="text-xs font-bold uppercase tracking-widest" id="status-pagamento">Aguardando Confirmação...</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // 3. INICIA A ROTINA DE VERIFICAÇÃO (LONG POLLING)
+                    iniciarVerificacaoPagamento(dadosPix.pedido_id);
+
+                } else {
+                    alert('Intermediador recusou: ' + (dadosPix.mensagem || 'Falha de comunicação.'));
+                    btn.innerHTML = textoOriginalBtn;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75');
+                }
+            } catch (error) {
+                alert('Erro na transação: ' + error.message);
+                btn.innerHTML = textoOriginalBtn;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+            }
+        });
+
+        // Função utilitária para copiar o PIX
+        function copiarPix() {
+            const texto = document.getElementById('texto-pix');
+            texto.select();
+            document.execCommand('copy');
+            alert('Código PIX Copiado!');
+        }
+
+        // Função que fica "escutando" o backend para saber se o PIX caiu
+        function iniciarVerificacaoPagamento(pedidoId) {
+            checagemPagamentoIntervalo = setInterval(async () => {
+                try {
+                    // Nós precisaremos criar esta pequena rota no views.py depois
+                    const response = await fetch(`/api/pagamentos/status/${pedidoId}/`);
+                    const data = await response.json();
+
+                    if (data.status === 'aprovado') {
+                        clearInterval(checagemPagamentoIntervalo);
+                        
+                        // Transforma a tela em SUCESSO VERDE!
+                        document.getElementById('area-pagamento').innerHTML = `
+                            <div class="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center shadow-2xl transform transition-all">
+                                <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-bounce">
+                                    <i class="fa-solid fa-check text-4xl"></i>
+                                </div>
+                                <h3 class="text-green-800 font-black uppercase tracking-widest text-2xl mb-2">Pagamento Aprovado!</h3>
+                                <p class="text-sm font-bold text-green-700 mb-6">O seu dinheiro de Cashback já está na sua carteira.</p>
+                                <a href="/clientes/perfil/" class="inline-block bg-black text-white font-black uppercase tracking-widest text-xs py-4 px-10 rounded hover:bg-zinc-800 transition-colors shadow-xl">
+                                    Acessar Minha Conta
+                                </a>
+                            </div>
+                        `;
+                    } else if (data.status === 'recusado' || data.status === 'cancelado') {
+                        clearInterval(checagemPagamentoIntervalo);
+                        document.getElementById('status-pagamento').innerText = "Pagamento Cancelado/Expirado.";
+                        document.getElementById('status-pagamento').classList.replace('text-zinc-500', 'text-red-500');
+                    }
+                } catch (error) {
+                    console.log("Aguardando verificação...", error);
+                }
+            }, 5000); // Checa a cada 5 segundos
+        }
+    </script>
+</body>
+</html>

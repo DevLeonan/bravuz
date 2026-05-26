@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comando Bravus | Visão Geral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-zinc-100 font-sans leading-normal tracking-normal flex h-screen overflow-hidden selection:bg-yellow-400 selection:text-black">
+
+    <div class="bg-zinc-950 text-white w-64 flex flex-col h-full shadow-2xl z-20 relative">
+        <div class="flex items-center justify-center h-20 border-b border-zinc-800">
+            <h1 class="text-2xl font-black uppercase tracking-widest text-white flex items-center">
+                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Bravus
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="/painel/" class="flex items-center gap-3 px-4 py-3 bg-yellow-400 text-black rounded-lg transition-all font-bold shadow-[0_0_15px_rgba(250,204,21,0.3)]">
+                <i class="fa-solid fa-chart-pie w-5"></i> Visão Geral
+            </a>
+            <a href="/painel/produtos/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-box-open w-5"></i> Estoque e Drop
+            </a>
+            <a href="/painel/pedidos/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-truck-fast w-5"></i> Expedição
+            </a>
+        </nav>
+        <div class="p-4 border-t border-zinc-800">
+            <div class="flex items-center gap-3 px-4 py-2">
+                <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-yellow-400 font-bold">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="text-xs">
+                    <p class="text-white font-bold">Administrador</p>
+                    <p class="text-zinc-500">Acesso Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col h-full relative overflow-y-auto w-full">
+        
+        <header class="bg-white shadow-sm flex items-center justify-between px-8 py-5 z-10 sticky top-0">
+            <h2 class="text-xl font-black text-zinc-800 uppercase tracking-widest">Painel de Performance</h2>
+            <div class="flex items-center gap-4">
+                <a href="/" target="_blank" class="text-sm font-bold text-zinc-500 hover:text-black transition-colors flex items-center gap-2 border-r border-zinc-200 pr-4">
+                    Ver Loja <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="/clientes/sair/" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wider">
+                    Sair do Sistema
+                </a>
+            </div>
+        </header>
+
+        <main class="p-8 w-full max-w-7xl mx-auto">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 text-zinc-100 group-hover:text-yellow-50 transition-colors duration-500">
+                        <i class="fa-solid fa-wallet text-8xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Faturamento (Hoje)</p>
+                        <h3 class="text-3xl font-black text-zinc-900">R$ {{ faturamento_hoje|floatformat:2 }}</h3>
+                        <p class="text-xs font-medium text-green-500 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-trend-up"></i> Atualizado agora
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 text-zinc-100 group-hover:text-blue-50 transition-colors duration-500">
+                        <i class="fa-solid fa-box text-8xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Peças Vendidas</p>
+                        <h3 class="text-3xl font-black text-zinc-900">{{ qtd_pedidos }}</h3>
+                        <p class="text-xs font-medium text-blue-500 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-boxes-packing"></i> Prontas para envio
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 text-zinc-100 group-hover:text-purple-50 transition-colors duration-500">
+                        <i class="fa-solid fa-tag text-8xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Ticket Médio</p>
+                        <h3 class="text-3xl font-black text-zinc-900">R$ {{ ticket_medio|floatformat:2 }}</h3>
+                        <p class="text-xs font-medium text-purple-500 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-chart-line"></i> Valor por pedido
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-6 relative overflow-hidden group">
+                    <div class="absolute -right-6 -top-6 text-zinc-100 group-hover:text-orange-50 transition-colors duration-500">
+                        <i class="fa-solid fa-users text-8xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Total de Clientes</p>
+                        <h3 class="text-3xl font-black text-zinc-900">{{ total_clientes }}</h3>
+                        <p class="text-xs font-medium text-orange-500 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-crown"></i> Membros Bravus
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100 bg-zinc-50 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-zinc-800 uppercase tracking-widest"><i class="fa-solid fa-chart-area mr-2 text-zinc-400"></i> Faturamento (Últimos 7 dias)</h3>
+                    </div>
+                    <div class="p-6 h-80">
+                        <canvas id="graficoVendas"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-zinc-100 bg-zinc-50 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-zinc-800 uppercase tracking-widest"><i class="fa-solid fa-bolt mr-2 text-yellow-500"></i> Feed Ao Vivo</h3>
+                    </div>
+                    <div class="p-0">
+                        <ul class="divide-y divide-zinc-100">
+                            {% for pedido in pedidos_recentes %}
+                            <li class="p-4 hover:bg-zinc-50 transition-colors flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-bold text-zinc-900">Pedido #{{ pedido.id }}</p>
+                                    <p class="text-[10px] text-zinc-500 uppercase tracking-wider">{{ pedido.cliente.username }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-black text-zinc-900">R$ {{ pedido.valor_total }}</p>
+                                    {% if pedido.status == 'aprovado' %}
+                                        <span class="text-[9px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded uppercase tracking-widest">Aprovado</span>
+                                    {% elif pedido.status == 'pendente' %}
+                                        <span class="text-[9px] font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded uppercase tracking-widest">Pendente</span>
+                                    {% else %}
+                                        <span class="text-[9px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded uppercase tracking-widest">Recusado</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="p-6 text-center text-zinc-500 text-xs font-bold uppercase tracking-widest">Nenhuma transação recente.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-zinc-50 border-t border-zinc-100 text-center">
+                        <a href="/painel/pedidos/" class="text-xs font-bold text-blue-600 hover:text-black uppercase tracking-widest transition-colors">Ver todos os pedidos <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pegando os dados gerados pelo Python (Django)
+            const labelsGrafico = {{ labels_grafico|safe }};
+            const dadosGrafico = {{ dados_grafico|safe }};
+
+            const ctx = document.getElementById('graficoVendas').getContext('2d');
+            
+            // Criando um gradiente amarelo para o gráfico de linha
+            let gradientFill = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientFill.addColorStop(0, 'rgba(250, 204, 21, 0.4)'); // Amarelo Bravus transparente
+            gradientFill.addColorStop(1, 'rgba(250, 204, 21, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelsGrafico,
+                    datasets: [{
+                        label: 'Faturamento Diário (R$)',
+                        data: dadosGrafico,
+                        borderColor: '#EAB308', // border-yellow-500
+                        backgroundColor: gradientFill,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#18181B', // zinc-900
+                        pointBorderColor: '#EAB308',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4 // Curva suave na linha
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Escondemos a legenda para ficar mais limpo
+                        },
+                        tooltip: {
+                            backgroundColor: '#18181B',
+                            titleFont: { size: 13, family: 'Inter' },
+                            bodyFont: { size: 14, weight: 'bold', family: 'Inter' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'R$ ' + context.parsed.y.toFixed(2).replace('.', ',');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#F4F4F5', // zinc-100
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 11, family: 'Inter', weight: 'bold' },
+                                color: '#A1A1AA', // zinc-400
+                                callback: function(value) {
+                                    return 'R$ ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { size: 11, family: 'Inter', weight: 'bold' },
+                                color: '#A1A1AA',
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

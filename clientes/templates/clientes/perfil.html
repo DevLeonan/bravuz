@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bravus | Minha Conta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+
+    <header class="bg-black text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+            <a href="/" class="flex items-center cursor-pointer">
+                <i class="fa-solid fa-bolt text-yellow-400 text-2xl mr-2"></i>
+                <span class="font-bold text-2xl tracking-widest uppercase">Bravus</span>
+            </a>
+            <a href="/clientes/sair/" class="text-sm text-gray-400 hover:text-white transition-colors">
+                Sair da conta <i class="fa-solid fa-arrow-right-from-bracket ml-1"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Olá, {{ request.user.email }}</h1>
+            <p class="text-gray-500">Gerencie seus pedidos, cashback e recompensas.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-gray-800">Sua Carteira</h2>
+                        <i class="fa-solid fa-wallet text-2xl text-blue-500"></i>
+                    </div>
+                    <p class="text-sm text-gray-500">Saldo disponível para a próxima compra.</p>
+                </div>
+                <div class="mt-6">
+                    <span class="text-4xl font-extrabold text-green-600">R$ {{ request.user.carteira_cashback }}</span>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-lg font-bold text-yellow-400">Indique e Ganhe</h2>
+                        <i class="fa-solid fa-bullhorn text-2xl text-yellow-400"></i>
+                    </div>
+                    <p class="text-sm text-gray-300">Ganhe R$ 10,00 na sua carteira para cada amigo que comprar usando seu link.</p>
+                </div>
+                <div class="mt-6">
+                    <p class="text-xs text-gray-400 mb-1 uppercase font-bold tracking-wider">Seu Código Exclusivo:</p>
+                    <div class="bg-gray-800 rounded-lg p-3 flex justify-between items-center border border-gray-700">
+                        <span class="font-mono text-lg text-yellow-400 tracking-widest">{{ request.user.codigo_indicacao }}</span>
+                        <button class="text-gray-400 hover:text-white transition-colors" onclick="alert('Código copiado: {{ request.user.codigo_indicacao }}')">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+            <h2 class="text-xl font-bold text-gray-900 mb-6 border-b pb-2">Meus Pedidos</h2>
+            
+            {% if pedidos %}
+                <div class="space-y-4">
+                    {% for pedido in pedidos %}
+                    <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <span class="font-bold text-gray-900">Pedido #{{ pedido.id }}</span>
+                                {% if pedido.status == 'aprovado' %}
+                                    <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Pagamento Aprovado</span>
+                                {% elif pedido.status == 'pendente' %}
+                                    <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Aguardando Pix</span>
+                                {% else %}
+                                    <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Recusado</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-gray-500">Realizado em {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="text-right w-full sm:w-auto flex justify-between sm:block">
+                            <span class="text-sm text-gray-500 block sm:inline mr-2">Valor Total:</span>
+                            <span class="font-extrabold text-lg text-gray-900">R$ {{ pedido.valor_total }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500 font-medium">Você ainda não fez nenhum pedido.</p>
+                    <a href="/" class="inline-block mt-4 text-blue-600 font-bold hover:underline">Ir para a vitrine</a>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

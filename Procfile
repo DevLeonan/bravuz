@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn core.wsgi --log-file - --timeout 120
+web: python manage.py migrate && gunicorn core.wsgi --log-file - --timeout 600

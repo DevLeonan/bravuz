@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn core.wsgi --log-file - --timeout 600
+web: python manage.py migrate && python manage.py createsuperuser --noinput || true && gunicorn core.wsgi

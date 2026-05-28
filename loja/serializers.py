@@ -11,8 +11,8 @@ class ProdutoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Produto
-        # Adicionamos o 'genero' na lista de campos exportados
+        # Agora o 'tamanhos' também é exportado para a vitrine ler
         fields = [
             'id', 'categoria_nome', 'nome', 'descricao', 'preco', 
-            'estoque', 'promocao_relampago', 'preco_promocional', 'imagem', 'genero'
+            'estoque', 'promocao_relampago', 'preco_promocional', 'imagem', 'genero', 'tamanhos'
         ]

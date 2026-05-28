@@ -22,6 +22,16 @@ class Produto(models.Model):
     # 2. O campo de gênero inserido junto com as outras informações
     genero = models.CharField(max_length=1, choices=GENERO_CHOICES, default='U')
     
+    # ==========================================
+    # NOVO CAMPO: Tamanhos Disponíveis
+    # ==========================================
+    tamanhos = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text="Digite os tamanhos separados por vírgula. Ex: P, M, G, GG ou 38, 40, 42"
+    )
+    
     # Preços e Estoque
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     estoque = models.IntegerField(default=0)

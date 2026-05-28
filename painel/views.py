@@ -257,7 +257,7 @@ def gerenciar_produtos(request):
         produtos = produtos.filter(estoque__gt=0, estoque__lte=3)
 
     categorias = Categoria.objects.all()
-    return render(request, 'painel/produtos.html', {'produtos': produtos, 'categorias': categories})
+    return render(request, 'painel/produtos.html', {'produtos': produtos, 'categorias': categorias})
 
 
 # ========================================================

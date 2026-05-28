@@ -37,18 +37,55 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Seus Dados e Entrega</h2>
                     
-                    <div class="mb-6">
-                        <p class="text-gray-600"><span class="font-semibold text-gray-800">E-mail:</span> {{ request.user.email }}</p>
-                        <p class="text-gray-600"><span class="font-semibold text-gray-800">CPF:</span> {{ request.user.cpf }}</p>
+                    <div class="mb-6 grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] uppercase font-black text-zinc-400 tracking-wider">E-mail de Contato</p>
+                            <p class="text-sm font-bold text-zinc-800">{{ request.user.email }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-black text-zinc-400 tracking-wider">CPF do Titular</p>
+                            <p class="text-sm font-bold text-zinc-800">{{ request.user.cpf }}</p>
+                        </div>
                     </div>
                     
                     <div class="mt-4 border-t border-gray-100 pt-5">
-                        <h3 class="text-sm font-bold text-gray-800 mb-2"><i class="fa-solid fa-truck-fast text-gray-400 mr-1"></i> Calcular Frete</h3>
+                        <h3 class="text-sm font-bold text-zinc-900 mb-2"><i class="fa-solid fa-truck-fast text-yellow-500 mr-1"></i> 1º Passo: Digite o CEP</h3>
                         <div class="flex gap-2 mb-2">
-                            <input type="text" id="input-cep" placeholder="Digite seu CEP (só números)" maxlength="9" class="w-48 border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-gray-50">
-                            <button onclick="buscarFrete()" class="bg-gray-900 text-white px-5 rounded text-sm font-bold hover:bg-black transition-colors shadow-sm">Calcular</button>
+                            <input type="text" id="input-cep" placeholder="Ex: 92400000" maxlength="9" class="w-48 border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-gray-50 font-bold">
+                            <button onclick="buscarFrete()" class="bg-black text-white px-5 rounded text-sm font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-sm">Calcular</button>
                         </div>
-                        <p id="texto-endereco" class="text-xs text-gray-500 italic">Digite o CEP para sabermos onde entregar a sua compra.</p>
+                        <p id="texto-endereco" class="text-xs text-gray-500 italic">Preencha o CEP para liberar os campos de endereço físico abaixo.</p>
+                    </div>
+
+                    <div class="mt-6 border-t border-zinc-100 pt-5">
+                        <h3 class="text-sm font-bold text-zinc-900 mb-4"><i class="fa-solid fa-map-location-dot text-zinc-400 mr-1"></i> 2º Passo: Dados Físicos para Despacho nos Correios</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-6 gap-3">
+                            <div class="sm:col-span-4">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Rua / Logradouro *</label>
+                                <input type="text" id="input-rua" placeholder="Ex: Rua Cairu" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Número *</label>
+                                <input type="text" id="input-numero" placeholder="Ex: 123" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white font-bold">
+                            </div>
+                            <div class="sm:col-span-3">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Complemento / Bloco (Opcional)</label>
+                                <input type="text" id="input-complemento" placeholder="Ex: Bloco B, Ap 202" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                            </div>
+                            <div class="sm:col-span-3">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Bairro *</label>
+                                <input type="text" id="input-bairro" placeholder="Ex: Bairro Fátima" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                            </div>
+                            <div class="sm:col-span-4">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Cidade *</label>
+                                <input type="text" id="input-cidade" placeholder="Ex: Canoas" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">Estado (UF) *</label>
+                                <input type="text" id="input-estado" placeholder="Ex: RS" maxlength="2" class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-black outline-none bg-white uppercase font-bold text-center">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
@@ -113,7 +150,7 @@
         });
 
         let totalCarrinho = 0;
-        let valorFreteGlobal = 0;
+        let valorFreteGlobal = -1; // Começa negativo para sabermos se o frete ja foi calculado
         let totalComFrete = 0;
         let saldoCashback = parseFloat(document.getElementById('saldo-cashback').getAttribute('data-valor').replace(',', '.')) || 0;
         let vaiUsarCashback = false;
@@ -140,7 +177,6 @@
                     ? `<img src="${item.imagem}" class="w-full h-full object-cover">` 
                     : `<i class="fa-solid fa-shirt text-gray-300"></i>`;
 
-                // AQUI NÓS LÊMOS O TAMANHO QUE VEIO DO CARRINHO (OU COLOCAMOS "ÚNICO" SE NÃO TIVER)
                 let tamanhoHtml = item.tamanho 
                     ? `<span class="bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mt-1 inline-block border border-gray-200">TAM: ${item.tamanho}</span>`
                     : '';
@@ -173,7 +209,6 @@
             localStorage.setItem('bravus_carrinho', JSON.stringify(carrinho));
             carregarResumo();
             
-            // Recalcula o frete automaticamente se o usuário remover um item e cair da regra dos 300
             if(document.getElementById('input-cep').value.length >= 8) {
                 buscarFrete();
             }
@@ -199,15 +234,19 @@
                 if (data.sucesso) {
                     valorFreteGlobal = data.valor_frete;
                     
+                    // Preenche automaticamente as caixas do formulário se a API retornou dados
+                    document.getElementById('input-rua').value = data.logradouro || '';
+                    document.getElementById('input-bairro').value = data.bairro || '';
+                    document.getElementById('input-cidade').value = data.cidade || '';
+                    document.getElementById('input-estado').value = data.estado || '';
+                    
                     if (valorFreteGlobal === 0) {
                         textoEndereco.innerHTML = `${data.endereco} <br><span class="text-green-600 font-black uppercase mt-1 inline-block tracking-wider"><i class="fa-solid fa-gift"></i> ${data.prazo}</span>`;
                         textoEndereco.className = "text-xs text-green-600 mt-2 block";
-                        
                         document.getElementById('texto-frete-resumo').innerHTML = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs uppercase tracking-widest font-black">Grátis</span>`;
                     } else {
                         textoEndereco.innerText = `${data.endereco} (Chega em ${data.prazo})`;
                         textoEndereco.className = "text-xs text-green-600 font-bold mt-1";
-                        
                         document.getElementById('texto-frete-resumo').innerText = `R$ ${valorFreteGlobal.toFixed(2).replace('.', ',')}`;
                         document.getElementById('texto-frete-resumo').className = "font-medium text-gray-900 font-bold";
                     }
@@ -216,12 +255,12 @@
                 } else {
                     textoEndereco.innerText = data.erro || "CEP não encontrado.";
                     textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
-                    valorFreteGlobal = 0;
+                    valorFreteGlobal = -1;
                     document.getElementById('texto-frete-resumo').innerText = `Calcule o CEP`;
                     atualizarTotais();
                 }
             } catch (error) {
-                textoEndereco.innerText = "Erro de rede. Use um CEP padrão ou tente novamente.";
+                textoEndereco.innerText = "Erro na rede ao calcular frete.";
                 textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
             }
         }
@@ -235,11 +274,12 @@
         function atualizarTotais() {
             document.getElementById('checkout-subtotal').innerText = `R$ ${totalCarrinho.toFixed(2).replace('.', ',')}`;
             
-            let valorFinal = totalCarrinho + valorFreteGlobal; 
+            let frete = valorFreteGlobal < 0 ? 0 : valorFreteGlobal;
+            let valorFinal = totalCarrinho + frete; 
             
             if (vaiUsarCashback && saldoCashback > 0) {
                 if (saldoCashback >= valorFinal) {
-                    valorFinal = 1.00; // Regra Mercado Pago: Mínimo de 1 real na transação PIX
+                    valorFinal = 1.00;
                 } else {
                     valorFinal = valorFinal - saldoCashback;
                 }
@@ -255,10 +295,22 @@
         }
 
         document.getElementById('btn-gerar-pix').addEventListener('click', async function() {
-            const textoEnd = document.getElementById('texto-endereco').innerText;
-            if (valorFreteGlobal === 0 && !textoEnd.includes('Chega em') && !textoEnd.includes('Frete Grátis')) {
-                alert("Por favor, calcule o frete digitando seu CEP antes de pagar.");
+            if (valorFreteGlobal < 0) {
+                alert("Por favor, digite seu CEP e clique em Calcular antes de finalizar!");
                 document.getElementById('input-cep').focus();
+                return;
+            }
+
+            // CAPTURA E VERIFICAÇÃO OPERACIONAL DO ENDEREÇO DE ENTREGA
+            const rua = document.getElementById('input-rua').value.trim();
+            const numero = document.getElementById('input-numero').value.trim();
+            const bairro = document.getElementById('input-bairro').value.trim();
+            const cidade = document.getElementById('input-cidade').value.trim();
+            const estado = document.getElementById('input-estado').value.trim();
+            const complemento = document.getElementById('input-complemento').value.trim();
+
+            if (!rua || !numero || !bairro || !cidade || !estado) {
+                alert("ERRO DE LOGÍSTICA: Você precisa preencher os campos obrigatórios do endereço (Rua, Número, Bairro, Cidade e Estado) para enviarmos seu pacote via Correios!");
                 return;
             }
 
@@ -269,7 +321,7 @@
             btn.classList.add('opacity-75');
 
             try {
-                // Ao criar o pedido, os itens já vão com o 'tamanho' embutido para o backend
+                // 1. Cria o Pedido injetando as variáveis completas de endereço de entrega
                 const resPedido = await fetch('/api/pagamentos/criar-pedido/', {
                     method: 'POST',
                     headers: {
@@ -279,7 +331,15 @@
                     body: JSON.stringify({ 
                         valor_total: totalComFrete, 
                         usar_cashback: vaiUsarCashback,
-                        itens: JSON.parse(localStorage.getItem('bravus_carrinho')) || [] 
+                        itens: JSON.parse(localStorage.getItem('bravus_carrinho')) || [],
+                        // Enviamos o bloco completo pro backend processar e salvar no banco
+                        cep: document.getElementById('input-cep').value,
+                        rua: rua,
+                        numero: numero,
+                        bairro: bairro,
+                        cidade: cidade,
+                        estado: estado,
+                        complemento: complemento
                     })
                 });
 
@@ -287,6 +347,7 @@
                 
                 if (!resPedido.ok) throw new Error(dadosPedido.erro || 'Falha ao registrar pedido.');
 
+                // 2. Aciona o Mercado Pago
                 const resPix = await fetch(`/api/pagamentos/criar-pix/${dadosPedido.pedido_id}/`, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': '{{ csrf_token }}' }
@@ -304,7 +365,6 @@
                             <div class="relative z-10">
                                 <h3 class="text-yellow-600 font-black uppercase tracking-widest text-xl mb-1">Aguardando PIX</h3>
                                 <p class="text-xs font-bold text-zinc-500 mb-4 uppercase tracking-wider">Pedido #${dadosPix.pedido_id}</p>
-                                
                                 <p class="text-sm text-zinc-600 mb-6 font-medium">Escaneie o QR Code abaixo no app do seu banco para liberar a compra.</p>
                                 
                                 <div class="bg-white p-2 rounded-lg shadow-sm border border-zinc-200 inline-block mb-6 relative">

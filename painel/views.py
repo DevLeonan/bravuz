@@ -95,14 +95,14 @@ def gerenciar_produtos(request):
             imagem = request.FILES.get('imagem')
             estoque = request.POST.get('estoque', 0)
             genero = request.POST.get('genero', 'U')
-            tamanhos = request.POST.get('tamanhos', '') # <-- Captura do novo campo
+            tamanhos = request.POST.get('tamanhos', '')
             
             categoria = Categoria.objects.get(id=categoria_id)
             Produto.objects.create(
                 nome=nome, preco=preco, estoque=estoque, genero=genero,
                 categoria=categoria, descricao="Adicionado via Painel de Controlo",
                 promocao_relampago=promocao_relampago, preco_promocional=preco_promocional,
-                imagem=imagem, tamanhos=tamanhos # <-- Salva no banco
+                imagem=imagem, tamanhos=tamanhos
             )
             
         elif acao == 'editar':
@@ -114,7 +114,7 @@ def gerenciar_produtos(request):
             produto.genero = request.POST.get('genero', produto.genero)
             produto.promocao_relampago = request.POST.get('promocao_relampago') == 'on'
             produto.preco_promocional = request.POST.get('preco_promocional') or None
-            produto.tamanhos = request.POST.get('tamanhos', '') # <-- Captura do novo campo na edição
+            produto.tamanhos = request.POST.get('tamanhos', '')
             
             categoria_id = request.POST.get('categoria')
             produto.categoria = Categoria.objects.get(id=categoria_id)
@@ -133,7 +133,7 @@ def gerenciar_produtos(request):
         # SUPER FUNÇÃO: Alteração de Preços em Massa (Markup/Desconto por Categoria)
         elif acao == 'ajuste_em_massa':
             categoria_filter = request.POST.get('categoria_massa')
-            tipo_ajuste = request.POST.get('tipo_ajuste') # 'aumentar' ou 'diminuir'
+            tipo_ajuste = request.POST.get('tipo_ajuste') 
             porcentagem = Decimal(request.POST.get('porcentagem', 0)) / 100
             
             query_produtos = Produto.objects.all()
@@ -168,7 +168,7 @@ def gerenciar_produtos(request):
                     prod.preco_promocional = prod.preco * (1 - porcentagem_desc)
                     prod.save()
 
-        # MOTOR DE IMPORTAÇÃO CONJUGADO (CSV + IMAGENS EM ZIP)
+        # MOTOR DE IMPORTAÇÃO CONJUGADO ATUALIZADO (CSV + IMAGENS EM ZIP + TAMANHOS)
         elif acao == 'importar_csv':
             arquivo_csv = request.FILES.get('arquivo_csv')
             arquivo_zip = request.FILES.get('arquivo_zip')
@@ -216,6 +216,9 @@ def gerenciar_produtos(request):
                             genero_csv = linha[4].strip().upper() if len(linha) > 4 else 'U'
                             estoque_csv = int(linha[5].strip()) if len(linha) > 5 and linha[5].strip().isdigit() else 10
                             
+                            # Suporte para a 7ª coluna opcional de tamanhos na planilha Excel/CSV
+                            tamanhos_csv = linha[6].strip() if len(linha) > 6 else ""
+                            
                             if genero_csv not in ['M', 'F', 'U']: genero_csv = 'U'
                             
                             try:
@@ -227,7 +230,8 @@ def gerenciar_produtos(request):
                                 
                                 produto_criado = Produto.objects.create(
                                     nome=nome_peca, preco=preco_final, categoria=categoria,
-                                    estoque=estoque_csv, genero=genero_csv, descricao="Importado em lote via CSV"
+                                    estoque=estoque_csv, genero=genero_csv, tamanhos=tamanhos_csv, 
+                                    descricao="Importado em lote via CSV"
                                 )
                                 
                                 nome_arquivo_foto = os.path.basename(caminho_imagem_original).lower()
@@ -244,7 +248,6 @@ def gerenciar_produtos(request):
                         
         return redirect('/painel/produtos/')
 
-    # Filtros de Visualização Inteligente do Catálogo (Filtro por Rutura ou Estoque Baixo)
     filtro_estoque = request.GET.get('filtro_estoque')
     produtos = Produto.objects.all().order_by('-criado_em')
     
@@ -254,7 +257,7 @@ def gerenciar_produtos(request):
         produtos = produtos.filter(estoque__gt=0, estoque__lte=3)
 
     categorias = Categoria.objects.all()
-    return render(request, 'painel/produtos.html', {'produtos': produtos, 'categorias': categorias})
+    return render(request, 'painel/produtos.html', {'produtos': produtos, 'categorias': categories})
 
 
 # ========================================================
@@ -274,7 +277,6 @@ def gerenciar_pedidos(request):
         except Pedido.DoesNotExist:
             return JsonResponse({'status': 'erro'}, status=400)
 
-    # Filtros rápidos para a expedição e logística
     filtro_status = request.GET.get('status')
     pedidos = Pedido.objects.all().order_by('-criado_em')
     if filtro_status in ['pendente', 'aprovado', 'recusado']:
@@ -284,7 +286,7 @@ def gerenciar_pedidos(request):
 
 
 # ========================================================
-# 4. GESTÃO DE CLIENTES E PODER ABSOLUTO DE CASHBACK (NOVO)
+# 4. GESTÃO DE CLIENTES E PODER ABSOLUTO DE CASHBACK
 # ========================================================
 @user_passes_test(checar_admin, login_url='/clientes/auth/')
 def gerenciar_clientes(request):
@@ -293,7 +295,6 @@ def gerenciar_clientes(request):
         cliente_id = request.POST.get('cliente_id')
         cliente = get_object_or_404(Cliente, id=cliente_id)
         
-        # Permite ao administrador dar bónus ou ajustar saldos manualmente
         if acao == 'ajustar_cashback':
             novo_saldo = request.POST.get('carteira_cashback')
             try:
@@ -304,11 +305,10 @@ def gerenciar_clientes(request):
                 return JsonResponse({'status': 'erro', 'mensagem': 'Valor inválido'}, status=400)
                 
         elif acao == 'alternar_status_vip':
-            cliente.is_staff = not cliente.is_staff # Transforma em sub-admin com acesso ao painel
+            cliente.is_staff = not cliente.is_staff 
             cliente.save()
             return JsonResponse({'status': 'sucesso', 'is_staff': cliente.is_staff})
 
-    # Analisa a base de compradores com agregação de valor gasto
     search_query = request.GET.get('busca_cliente', '')
     clientes = Cliente.objects.filter(is_superuser=False).annotate(
         total_pedidos=Count('pedido', filter=Q(pedido__status='aprovado')),

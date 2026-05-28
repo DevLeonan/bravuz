@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comando Bravus | Estoque</title>
+    <title>Comando Bravuz | Estoque e Drops</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-aberto { display: flex !important; animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
 </head>
 <body class="bg-zinc-100 font-sans leading-normal tracking-normal flex h-screen overflow-hidden selection:bg-yellow-400 selection:text-black">
 
     <div class="bg-zinc-950 text-white w-64 flex flex-col h-full shadow-2xl z-20 relative">
         <div class="flex items-center justify-center h-20 border-b border-zinc-800">
             <h1 class="text-2xl font-black uppercase tracking-widest text-white flex items-center">
-                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Bravus
+                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Bravuz
             </h1>
         </div>
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -25,139 +31,136 @@
             <a href="/painel/pedidos/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
                 <i class="fa-solid fa-truck-fast w-5"></i> Expedição
             </a>
+            <a href="/painel/clientes/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-users w-5"></i> Clientes / VIP
+            </a>
         </nav>
     </div>
 
     <div class="flex-1 flex flex-col h-full relative overflow-y-auto w-full">
         
         <header class="bg-white shadow-sm flex items-center justify-between px-8 py-5 z-10 sticky top-0">
-            <h2 class="text-xl font-black text-zinc-800 uppercase tracking-widest">Gestão de Peças</h2>
-            <div class="flex items-center gap-4">
-                <form action="/painel/produtos/" method="POST" onsubmit="return confirm('ATENÇÃO: Isso vai apagar TODAS as roupas do sistema irreversivelmente. Tem certeza?');" class="inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="acao" value="limpar_catalogo">
-                    <button type="submit" class="text-xs font-bold text-red-600 hover:text-white hover:bg-red-600 border border-red-200 bg-red-50 px-4 py-2 rounded transition-colors flex items-center gap-2 uppercase tracking-wider">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Limpar Catálogo
-                    </button>
-                </form>
+            <h2 class="text-xl font-black text-zinc-800 uppercase tracking-widest">Gestão de Catálogo</h2>
+            
+            <div class="flex gap-2">
+                <a href="?filtro_estoque=critico" class="bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-orange-200">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Alerta Crítico
+                </a>
+                <a href="?filtro_estoque=esgotados" class="bg-red-100 text-red-700 hover:bg-red-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-red-200">
+                    <i class="fa-solid fa-ban"></i> Esgotados
+                </a>
+                <a href="/painel/produtos/" class="bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-zinc-300">
+                    Ver Todos
+                </a>
             </div>
         </header>
 
-        <main class="p-8 w-full max-w-7xl mx-auto">
+        <main class="p-8 w-full max-w-7xl mx-auto space-y-6">
             
-            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden mb-8">
-                <div class="px-6 py-4 border-b border-zinc-100 bg-zinc-50 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-plus text-yellow-500"></i>
-                        <h3 class="text-sm font-bold text-zinc-800 uppercase tracking-widest">Lançar Nova Peça</h3>
-						<div>
-							<label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Estoque Inicial</label>
-							<input type="number" name="estoque" value="10" required class="w-full border border-zinc-300 rounded p-3 focus:ring-2 focus:ring-black outline-none transition-shadow text-sm font-medium">
-						</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="abrirModal('modal-add')" class="bg-black text-white p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-zinc-800 transition-colors group">
+                    <div class="bg-zinc-800 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-yellow-400 group-hover:text-black transition-colors">
+                        <i class="fa-solid fa-plus"></i>
                     </div>
-                    <button onclick="document.getElementById('modal-csv').classList.remove('hidden')" class="bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] py-2 px-4 rounded hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
-                        <i class="fa-solid fa-file-csv text-sm"></i> Subir Planilha Rápida
+                    <div class="text-left">
+                        <p class="text-xs font-black uppercase tracking-widest">Nova Peça</p>
+                        <p class="text-[10px] text-zinc-400">Lançamento Único</p>
+                    </div>
+                </button>
+
+                <button onclick="abrirModal('modal-csv')" class="bg-white border border-zinc-200 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-blue-50 hover:border-blue-200 transition-colors group">
+                    <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-file-csv"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-black uppercase tracking-widest text-zinc-800">Carga em Lote</p>
+                        <p class="text-[10px] text-zinc-400">Planilha + ZIP</p>
+                    </div>
+                </button>
+
+                <button onclick="abrirModal('modal-massa')" class="bg-white border border-zinc-200 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-purple-50 hover:border-purple-200 transition-colors group">
+                    <div class="bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-black uppercase tracking-widest text-zinc-800">Preços em Massa</p>
+                        <p class="text-[10px] text-zinc-400">Aumentar/Descontos</p>
+                    </div>
+                </button>
+
+                <form method="POST" onsubmit="return confirm('ATENÇÃO MAXIMA: Deseja APAGAR TODO O SEU CATÁLOGO da loja irreversivelmente?');" class="h-full">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="limpar_catalogo">
+                    <button type="submit" class="w-full h-full bg-red-50 border border-red-200 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-red-600 hover:text-white transition-colors group text-red-600">
+                        <div class="bg-red-200 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-red-800 group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs font-black uppercase tracking-widest">Zona de Risco</p>
+                            <p class="text-[10px] opacity-80">Limpar Todo o Catálogo</p>
+                        </div>
                     </button>
-                </div>
-                <div class="p-6">
-                    <form action="/painel/produtos/" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        {% csrf_token %}
-                        <input type="hidden" name="acao" value="criar">
-                        
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Nome da Peça</label>
-                            <input type="text" name="nome" required class="w-full border border-zinc-300 rounded p-3 focus:ring-2 focus:ring-black outline-none transition-shadow text-sm font-medium">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Preço (R$)</label>
-                            <input type="number" step="0.01" name="preco" required class="w-full border border-zinc-300 rounded p-3 focus:ring-2 focus:ring-black outline-none transition-shadow text-sm font-medium">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Categoria</label>
-                            <select name="categoria" class="w-full border border-zinc-300 rounded p-3 focus:ring-2 focus:ring-black outline-none bg-white text-sm font-medium">
-                                {% for cat in categorias %}
-                                    <option value="{{ cat.id }}">{{ cat.nome }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="md:col-span-2 flex flex-col justify-center bg-zinc-50 p-4 rounded border border-zinc-200">
-                            <label class="flex items-center cursor-pointer gap-3 mb-3">
-                                <input type="checkbox" name="promocao_relampago" class="w-5 h-5 text-black border-zinc-300 rounded focus:ring-black">
-                                <span class="text-sm font-bold text-zinc-800 uppercase tracking-wide">Ativar Oferta Relâmpago</span>
-                            </label>
-                            <div>
-                                <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Preço Promocional</label>
-                                <input type="number" step="0.01" name="preco_promocional" class="w-full border border-zinc-300 rounded p-2 focus:ring-2 focus:ring-black outline-none text-sm font-medium">
-                            </div>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Foto Principal</label>
-                            <input type="file" name="imagem" accept="image/*" class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-black file:text-white hover:file:bg-zinc-800 cursor-pointer">
-                        </div>
-                        
-                        <div class="md:col-span-4 flex justify-end pt-2 border-t border-zinc-100">
-                            <button type="submit" class="bg-black text-white font-black uppercase tracking-widest text-xs py-3 px-8 rounded hover:bg-yellow-400 hover:text-black transition-colors shadow-md">
-                                Adicionar ao Drop
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                </form>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-zinc-100 bg-zinc-50">
-                    <h3 class="text-sm font-bold text-zinc-800 uppercase tracking-widest">Catálogo Atual</h3>
-                </div>
-                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-200 bg-white">
-                                <th class="px-6 py-4">Peça</th>
-                                <th class="px-6 py-4">Categoria</th>
-                                <th class="px-6 py-4">Preços</th>
-                                <th class="px-6 py-4 text-right">Ações</th>
+                            <tr class="bg-zinc-50 text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-200">
+                                <th class="px-6 py-4">Foto / Produto</th>
+                                <th class="px-6 py-4">Categoria / Gênero</th>
+                                <th class="px-6 py-4">Valor de Venda</th>
+                                <th class="px-6 py-4">Estoque Atual</th>
+                                <th class="px-6 py-4 text-right">Controles</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-100">
                             {% for produto in produtos %}
-                            <tr class="hover:bg-zinc-50 transition-colors group">
+                            <tr class="hover:bg-zinc-50 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded bg-zinc-200 border border-zinc-300 flex items-center justify-center overflow-hidden">
+                                        <div class="w-12 h-14 rounded bg-zinc-100 border border-zinc-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                                             {% if produto.imagem %}
                                                 <img src="{{ produto.imagem.url }}" class="w-full h-full object-cover">
                                             {% else %}
-                                                <i class="fa-solid fa-shirt text-zinc-400"></i>
+                                                <i class="fa-solid fa-shirt text-zinc-300"></i>
                                             {% endif %}
                                         </div>
-                                        <span class="font-bold text-zinc-900 text-sm">{{ produto.nome }}</span>
+                                        <div>
+                                            <span class="font-bold text-zinc-900 text-sm block">{{ produto.nome }}</span>
+                                            <span class="text-[9px] text-zinc-400 font-mono">ID: #{{ produto.id }}</span>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                                    {{ produto.categoria.nome }}
+                                <td class="px-6 py-4">
+                                    <span class="text-xs font-bold text-zinc-700 uppercase tracking-wider block">{{ produto.categoria.nome }}</span>
+                                    <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Dep: {{ produto.genero }}</span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm font-black text-zinc-800">R$ {{ produto.preco }}</div>
-                                    {% if produto.promocao_relampago %}
-                                        <div class="bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block mt-1">Oferta: R$ {{ produto.preco_promocional }}</div>
+                                    <div class="text-sm font-black text-zinc-900">R$ {{ produto.preco }}</div>
+                                    {% if produto.promocao_relampago and produto.preco_promocional %}
+                                        <div class="bg-red-100 text-red-700 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block mt-1">Oferta: R$ {{ produto.preco_promocional }}</div>
                                     {% endif %}
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    
-                                    <button onclick="abrirModalEdicao('{{ produto.id }}', '{{ produto.nome }}', '{{ produto.preco|stringformat:'f' }}', '{{ produto.categoria.id }}', '{{ produto.promocao_relampago }}', '{{ produto.preco_promocional|default_if_none:'' }}')" class="text-blue-500 hover:text-blue-700 transition-colors p-2 mr-2">
-                                        <i class="fa-solid fa-pen-to-square"></i> Editar
+                                <td class="px-6 py-4">
+                                    {% if produto.estoque == 0 %}
+                                        <span class="bg-red-100 text-red-700 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]">Esgotado</span>
+                                    {% elif produto.estoque <= 3 %}
+                                        <span class="bg-orange-100 text-orange-700 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]">{{ produto.estoque }} Unid. (Baixo)</span>
+                                    {% else %}
+                                        <span class="bg-green-100 text-green-800 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]">{{ produto.estoque }} Unidades</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <button onclick="abrirModalEdicao('{{ produto.id }}', '{{ produto.nome }}', '{{ produto.preco|stringformat:'f' }}', '{{ produto.estoque }}', '{{ produto.genero }}', '{{ produto.categoria.id }}', '{{ produto.promocao_relampago }}', '{{ produto.preco_promocional|default_if_none:'' }}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-colors p-2 rounded mr-2">
+                                        <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-
                                     <form action="/painel/produtos/" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar {{ produto.nome }}?');" class="inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="acao" value="deletar">
                                         <input type="hidden" name="produto_id" value="{{ produto.id }}">
-                                        <button type="submit" class="text-zinc-400 hover:text-red-600 transition-colors p-2">
+                                        <button type="submit" class="text-red-600 bg-red-50 hover:bg-red-600 hover:text-white transition-colors p-2 rounded">
                                             <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </form>
@@ -165,7 +168,11 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="px-6 py-10 text-center text-zinc-500 font-medium">Você ainda não lançou nenhuma peça.</td>
+                                <td colspan="5" class="px-6 py-16 text-center">
+                                    <i class="fa-solid fa-box-open text-4xl text-zinc-300 mb-4 block"></i>
+                                    <p class="text-zinc-500 font-bold uppercase tracking-widest text-sm">Seu estoque está vazio.</p>
+                                    <p class="text-zinc-400 text-xs mt-1">Adicione uma peça manualmente ou faça upload de uma planilha.</p>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -175,99 +182,208 @@
         </main>
     </div>
 
-    <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center hidden backdrop-blur-sm">
-        <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl p-6 relative animate-fade-in">
-            <button onclick="fecharModalEdicao()" class="absolute top-4 right-4 text-zinc-400 hover:text-black">
-                <i class="fa-solid fa-xmark text-2xl"></i>
-            </button>
-            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-6 border-b pb-2">Editar Peça</h2>
+    <div id="modal-add" class="fixed inset-0 bg-black bg-opacity-70 z-50 justify-center items-center hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <button onclick="fecharModal('modal-add')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-6 border-b pb-2"><i class="fa-solid fa-plus text-yellow-500 mr-2"></i> Lançar Nova Peça</h2>
             
-            <form action="/painel/produtos/" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form action="/painel/produtos/" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% csrf_token %}
-                <input type="hidden" name="acao" value="editar">
-                <input type="hidden" name="produto_id" id="edit-id">
+                <input type="hidden" name="acao" value="criar">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Nome da Peça</label>
-                        <input type="text" name="nome" id="edit-nome" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Preço Base</label>
-                        <input type="number" step="0.01" name="preco" id="edit-preco" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria</label>
-                        <select name="categoria" id="edit-categoria" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black bg-white">
-                            {% for cat in categorias %}
-                                <option value="{{ cat.id }}">{{ cat.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Nome da Peça</label>
+                    <input type="text" name="nome" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                 </div>
-
-                <div class="bg-zinc-50 p-4 rounded border border-zinc-200">
-                    <label class="flex items-center cursor-pointer gap-2 mb-2">
-                        <input type="checkbox" name="promocao_relampago" id="edit-promo-check" class="w-4 h-4 text-black border-zinc-300 rounded focus:ring-black">
-                        <span class="text-xs font-bold text-zinc-800 uppercase tracking-wide">Promoção Relâmpago</span>
-                    </label>
-                    <input type="number" step="0.01" name="preco_promocional" id="edit-promo-preco" placeholder="Novo Preço com Desconto" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black">
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Preço Cheio (R$)</label>
+                    <input type="number" step="0.01" name="preco" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Substituir Foto (Opcional)</label>
-                    <input type="file" name="imagem" accept="image/*" class="w-full text-sm">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Estoque Inicial (Unidades)</label>
+                    <input type="number" name="estoque" value="10" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria / Marca</label>
+                    <select name="categoria" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                        {% for cat in categorias %}<option value="{{ cat.id }}">{{ cat.nome }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Departamento (Gênero)</label>
+                    <select name="genero" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                        <option value="U">Unissex</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200 grid grid-cols-2 gap-4 items-center">
+                    <label class="flex items-center cursor-pointer gap-2">
+                        <input type="checkbox" name="promocao_relampago" class="w-4 h-4 text-black border-zinc-300 rounded focus:ring-black">
+                        <span class="text-xs font-black text-yellow-800 uppercase tracking-wide">Ativar Promoção</span>
+                    </label>
+                    <div>
+                        <input type="number" step="0.01" name="preco_promocional" placeholder="R$ Preço com Desconto" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 mt-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Foto do Produto (Opcional)</label>
+                    <input type="file" name="imagem" accept="image/*" class="w-full border border-zinc-300 rounded p-1.5 text-sm bg-zinc-50 file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-black file:text-white hover:file:bg-zinc-800 cursor-pointer">
                 </div>
                 
-                <div class="pt-4 flex justify-end gap-3">
-                    <button type="button" onclick="fecharModalEdicao()" class="px-6 py-2 text-xs font-bold uppercase text-zinc-600 bg-zinc-200 hover:bg-zinc-300 rounded">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 text-xs font-bold uppercase text-white bg-blue-600 hover:bg-blue-700 rounded shadow-md">Salvar Alterações</button>
+                <div class="md:col-span-2 pt-4 flex justify-end">
+                    <button type="submit" class="bg-black text-white font-black uppercase tracking-widest text-xs py-3 px-8 rounded hover:bg-yellow-400 hover:text-black transition-colors shadow-md w-full">Adicionar ao Estoque</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-csv" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center hidden backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative animate-fade-in">
-            <button onclick="fecharModalCsv()" class="absolute top-4 right-4 text-zinc-400 hover:text-black">
-                <i class="fa-solid fa-xmark text-2xl"></i>
-            </button>
-            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-2 border-b pb-2"><i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Lançamento Rápido</h2>
+    <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-70 z-50 justify-center items-center hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <button onclick="fecharModal('modal-editar')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-6 border-b pb-2">Editar Peça</h2>
             
-            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-                <p class="text-xs text-blue-800 font-medium mb-2">Sua planilha precisa ser salva no formato <strong>.CSV (Separado por vírgulas)</strong>.</p>
-                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">A ordem das colunas deve ser EXATAMENTE:</p>
+            <form action="/painel/produtos/" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="editar">
+                <input type="hidden" name="produto_id" id="edit-id">
+                
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Nome da Peça</label>
+                    <input type="text" name="nome" id="edit-nome" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Preço Base</label>
+                    <input type="number" step="0.01" name="preco" id="edit-preco" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Estoque</label>
+                    <input type="number" name="estoque" id="edit-estoque" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria</label>
+                    <select name="categoria" id="edit-categoria" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                        {% for cat in categorias %}<option value="{{ cat.id }}">{{ cat.nome }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Departamento</label>
+                    <select name="genero" id="edit-genero" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
+                        <option value="U">Unissex</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200 grid grid-cols-2 gap-4 items-center">
+                    <label class="flex items-center cursor-pointer gap-2">
+                        <input type="checkbox" name="promocao_relampago" id="edit-promo-check" class="w-4 h-4 text-black border-zinc-300 rounded focus:ring-black">
+                        <span class="text-xs font-black text-yellow-800 uppercase tracking-wide">Ativar Promoção</span>
+                    </label>
+                    <div>
+                        <input type="number" step="0.01" name="preco_promocional" id="edit-promo-preco" placeholder="R$ Preço Desconto" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 mt-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Substituir Foto</label>
+                    <input type="file" name="imagem" accept="image/*" class="w-full border border-zinc-300 rounded p-1.5 text-sm bg-zinc-50 file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-black file:text-white cursor-pointer">
+                </div>
+                
+                <div class="md:col-span-2 pt-4 flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white font-black uppercase tracking-widest text-xs py-3 px-8 rounded hover:bg-blue-700 transition-colors shadow-md w-full">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-csv" class="fixed inset-0 bg-black bg-opacity-70 z-50 justify-center items-center hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+            <button onclick="fecharModal('modal-csv')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-2 border-b pb-2"><i class="fa-solid fa-file-csv text-blue-500 mr-2"></i> Carga em Lote</h2>
+            
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 mt-4">
+                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">A ordem das colunas (.CSV):</p>
                 <ol class="text-xs text-blue-900 font-mono bg-white p-2 rounded border border-blue-200">
-                    <li>1. Nome da Peça</li>
-                    <li>2. Preço (Ex: 149.90)</li>
-                    <li>3. Categoria (Ex: Camisetas)</li>
+                    <li>1. Nome | 2. Preço | 3. Categoria</li>
+                    <li>4. Nome da Foto | 5. Gênero (M/F/U) | 6. Estoque</li>
                 </ol>
             </div>
             
             <form method="POST" action="/painel/produtos/" enctype="multipart/form-data" class="space-y-4">
-				{% csrf_token %}
-				<input type="hidden" name="acao" value="importar_csv">
-				
-				<div>
-					<label class="block text-xs font-bold uppercase tracking-wider mb-2">1. Selecione a planilha (.CSV)</label>
-					<input type="file" name="arquivo_csv" accept=".csv" required class="border p-2 w-full">
-				</div>
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="importar_csv">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Planilha (.CSV)</label>
+                    <input type="file" name="arquivo_csv" accept=".csv" required class="border border-zinc-300 rounded p-2 w-full text-sm bg-zinc-50">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Fotos Compactadas (.ZIP) - Opcional</label>
+                    <input type="file" name="arquivo_zip" accept=".zip" class="border border-zinc-300 rounded p-2 w-full text-sm bg-zinc-50">
+                </div>
+                <button type="submit" class="w-full bg-black text-white px-6 py-3 font-black uppercase tracking-widest text-xs rounded hover:bg-zinc-800 transition-colors mt-2">Iniciar Importação</button>
+            </form>
+        </div>
+    </div>
 
-				<div>
-					<label class="block text-xs font-bold uppercase tracking-wider mb-2">2. Selecione as Fotos Compactadas (.ZIP) - Opcional</label>
-					<input type="file" name="arquivo_zip" accept=".zip" class="border p-2 w-full">
-				</div>
-
-				<button type="submit" class="bg-black text-white px-6 py-3 font-bold uppercase tracking-widest text-xs">Iniciar Importação em Lote</button>
-			</form>
+    <div id="modal-massa" class="fixed inset-0 bg-black bg-opacity-70 z-50 justify-center items-center hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+            <button onclick="fecharModal('modal-massa')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-4 border-b pb-2"><i class="fa-solid fa-tags text-purple-500 mr-2"></i> Alteração em Bloco</h2>
+            
+            <form method="POST" action="/painel/produtos/" class="space-y-4 mt-4">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="ajuste_em_massa">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria (Marca)</label>
+                        <select name="categoria_massa" class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50">
+                            <option value="todas">Todas as Peças</option>
+                            {% for cat in categorias %}<option value="{{ cat.id }}">{{ cat.nome }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Operação</label>
+                        <select name="tipo_ajuste" class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50">
+                            <option value="aumentar">Aumento (+)</option>
+                            <option value="diminuir">Desconto (-)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Porcentagem (%)</label>
+                    <input type="number" name="porcentagem" min="1" max="100" placeholder="Ex: 10 para aplicar 10%" required class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50 focus:ring-2 focus:ring-black">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs rounded hover:bg-purple-700 transition-colors mt-2">Processar Recálculo</button>
+            </form>
         </div>
     </div>
 
     <script>
-        function abrirModalEdicao(id, nome, preco, categoriaId, isPromo, precoPromo) {
+        function abrirModal(idModal) {
+            document.getElementById(idModal).classList.add('modal-aberto');
+        }
+
+        function fecharModal(idModal) {
+            document.getElementById(idModal).classList.remove('modal-aberto');
+        }
+
+        function abrirModalEdicao(id, nome, preco, estoque, genero, categoriaId, isPromo, precoPromo) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nome').value = nome;
             document.getElementById('edit-preco').value = parseFloat(preco.replace(',', '.')).toFixed(2);
+            document.getElementById('edit-estoque').value = estoque;
+            document.getElementById('edit-genero').value = genero;
             document.getElementById('edit-categoria').value = categoriaId;
             
             const promoCheck = document.getElementById('edit-promo-check');
@@ -275,15 +391,7 @@
             
             document.getElementById('edit-promo-preco').value = precoPromo !== 'None' ? parseFloat(precoPromo.replace(',', '.')).toFixed(2) : '';
             
-            document.getElementById('modal-editar').classList.remove('hidden');
-        }
-
-        function fecharModalEdicao() {
-            document.getElementById('modal-editar').classList.add('hidden');
-        }
-
-        function fecharModalCsv() {
-            document.getElementById('modal-csv').classList.add('hidden');
+            abrirModal('modal-editar');
         }
     </script>
 </body>

@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import Pedido, ItemPedido
+from loja.models import Produto  # IMPORTANTE: Importando o Produto para dar baixa no estoque
 from decimal import Decimal
 
 class CriarPedidoView(APIView):
@@ -64,10 +65,10 @@ class CriarPixView(APIView):
         
         payment_data = {
             "transaction_amount": float(pedido.valor_total),
-            "description": f"Bravus - Pedido #{pedido.id}",
+            "description": f"Bravuz - Pedido #{pedido.id}",
             "payment_method_id": "pix",
             "payer": {
-                "email": pedido.cliente.email or "cliente@bravus.com",
+                "email": pedido.cliente.email or "cliente@bravuz.com",
                 "first_name": pedido.cliente.first_name or pedido.cliente.username,
                 "last_name": pedido.cliente.last_name or "Silva",
                 "identification": {
@@ -102,17 +103,11 @@ class CriarPixView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ==========================================
-# NOVO: O OUVINTE DO FRONTEND
-# ==========================================
 class VerificarStatusPagamentoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pedido_id):
-        # Busca o pedido garantindo que ele pertence a quem está perguntando
         pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
-        
-        # Devolve para o Javascript qual é o status atual no nosso banco de dados
         return Response({'status': pedido.status}, status=status.HTTP_200_OK)
 
 
@@ -138,6 +133,24 @@ class WebhookMercadoPagoView(APIView):
                         if pedido.status != 'aprovado':
                             pedido.status = 'aprovado'
                             
+                            # ==========================================
+                            # MÁGICA 1: BAIXA AUTOMÁTICA DE ESTOQUE
+                            # ==========================================
+                            itens = ItemPedido.objects.filter(pedido=pedido)
+                            for item in itens:
+                                try:
+                                    produto = Produto.objects.get(id=item.produto_id)
+                                    if produto.estoque >= item.quantidade:
+                                        produto.estoque -= item.quantidade
+                                    else:
+                                        produto.estoque = 0 # Evita que o estoque fique negativo
+                                    produto.save()
+                                except Produto.DoesNotExist:
+                                    pass # Ignora se o produto tiver sido deletado do banco
+                            
+                            # ==========================================
+                            # MÁGICA 2: DISTRIBUIÇÃO DE CASHBACK
+                            # ==========================================
                             porcentagem_cashback = Decimal('0.05')
                             valor_cashback = pedido.valor_total * porcentagem_cashback
                             
@@ -149,7 +162,7 @@ class WebhookMercadoPagoView(APIView):
                                 padrinho = cliente.indicado_por
                                 padrinho.carteira_cashback += Decimal('10.00')
                                 padrinho.save()
-                        
+                    
                     elif status_pagamento in ['rejected', 'cancelled']:
                         pedido.status = 'recusado'
                         

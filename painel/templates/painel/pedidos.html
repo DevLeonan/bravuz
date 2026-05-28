@@ -3,117 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comando Bravus | Pedidos</title>
+    <title>Comando Bravuz | Expedição e Encomendas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal flex h-screen overflow-hidden">
+<body class="bg-zinc-100 font-sans leading-normal tracking-normal flex h-screen overflow-hidden selection:bg-yellow-400 selection:text-black">
 
-    <!-- Menu Lateral (Sidebar) -->
-    <div class="bg-gray-900 text-white w-64 flex flex-col h-full shadow-xl z-10">
-        <div class="flex items-center justify-center h-20 border-b border-gray-800">
-            <h1 class="text-2xl font-bold uppercase tracking-wider text-white">
-                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Bravus
+    <div class="bg-zinc-950 text-white w-64 flex flex-col h-full shadow-2xl z-20 relative">
+        <div class="flex items-center justify-center h-20 border-b border-zinc-800">
+            <h1 class="text-2xl font-black uppercase tracking-widest text-white flex items-center">
+                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> Bravuz
             </h1>
         </div>
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <a href="/painel/" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+            <a href="/painel/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-chart-pie w-5"></i> Visão Geral
             </a>
-            <a href="/painel/produtos/" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                <i class="fa-solid fa-box-open w-5"></i> Produtos
+            <a href="/painel/produtos/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-box-open w-5"></i> Estoque e Drop
             </a>
-            <a href="/painel/pedidos/" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg transition-colors">
-                <i class="fa-solid fa-shopping-cart w-5"></i> Pedidos
+            <a href="/painel/pedidos/" class="flex items-center gap-3 px-4 py-3 bg-yellow-400 text-black rounded-lg transition-all font-bold shadow-[0_0_15px_rgba(250,204,21,0.3)]">
+                <i class="fa-solid fa-truck-fast w-5"></i> Expedição
+            </a>
+            <a href="/painel/clientes/" class="flex items-center gap-3 px-4 py-3 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all font-medium">
+                <i class="fa-solid fa-users w-5"></i> Clientes / VIP
             </a>
         </nav>
     </div>
 
-    <!-- Conteúdo Principal -->
     <div class="flex-1 flex flex-col h-full relative overflow-y-auto w-full">
         
-        <header class="bg-white shadow-sm flex items-center justify-between px-8 py-5 z-0">
-            <h2 class="text-xl font-semibold text-gray-800">Central de Expedição e Vendas</h2>
-            <div class="flex items-center gap-4">
-                <a href="/admin/logout/" class="text-sm font-medium text-red-600 hover:text-red-800 bg-red-50 px-4 py-2 rounded-lg transition-colors">Sair</a>
+        <header class="bg-white shadow-sm flex items-center justify-between px-8 py-5 z-10 sticky top-0">
+            <h2 class="text-xl font-black text-zinc-800 uppercase tracking-widest">Central de Expedição</h2>
+            
+            <div class="flex gap-2">
+                <a href="?status=pendente" class="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-yellow-200">
+                    <i class="fa-solid fa-clock"></i> Pendentes
+                </a>
+                <a href="?status=aprovado" class="bg-green-100 text-green-700 hover:bg-green-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-green-200">
+                    <i class="fa-solid fa-check"></i> Aprovados
+                </a>
+                <a href="/painel/pedidos/" class="bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-bold text-[10px] uppercase tracking-wider px-4 py-2 rounded transition-colors border border-zinc-300">
+                    Todos os Pedidos
+                </a>
             </div>
         </header>
 
-        <main class="p-8 w-full max-w-7xl mx-auto">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 class="text-lg font-bold text-gray-900">Histórico de Transações</h3>
-                </div>
-                
+        <main class="p-8 w-full max-w-7xl mx-auto space-y-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-white">
-                                <th class="px-6 py-4">Pedido e Itens</th>
-                                <th class="px-6 py-4">Cliente</th>
-                                <th class="px-6 py-4">Valor</th>
-                                <th class="px-6 py-4 text-center">Status</th>
-                                <th class="px-6 py-4 text-right">Ação Rápida</th>
+                            <tr class="bg-zinc-50 text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-200">
+                                <th class="px-6 py-4">Status / Data</th>
+                                <th class="px-6 py-4">Cliente e Contato</th>
+                                <th class="px-6 py-4">Caixa (Itens do Pedido)</th>
+                                <th class="px-6 py-4">Valor e ID Transação</th>
+                                <th class="px-6 py-4 text-right">Ação</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-zinc-100">
                             {% for pedido in pedidos %}
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-zinc-50 transition-colors align-top">
                                 
-                                <!-- COLUNA DO PEDIDO COM O RAIO-X DOS ITENS -->
-                                <td class="px-6 py-4 align-top w-1/3">
-                                    <div class="font-bold text-gray-900">#{{ pedido.id }}</div>
-                                    <div class="text-xs text-gray-500 mb-3">{{ pedido.criado_em|date:"d/m/Y H:i" }}</div>
-                                    
-                                    <!-- A Mágica de visualização da caixa -->
-                                    <div class="bg-white border border-gray-200 rounded p-3 shadow-sm">
-                                        <p class="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Itens na embalagem:</p>
-                                        <ul class="text-xs text-gray-800 space-y-1.5 font-medium">
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="font-black text-zinc-900 text-lg">#{{ pedido.id }}</div>
+                                        <div class="text-[10px] text-zinc-400 font-bold">{{ pedido.criado_em|date:"d/m/Y H:i" }}</div>
+                                        <div>
+                                            {% if pedido.status == 'aprovado' %}
+                                                <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]"><i class="fa-solid fa-check mr-1"></i> Aprovado</span>
+                                            {% elif pedido.status == 'pendente' %}
+                                                <span class="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]"><i class="fa-solid fa-clock mr-1"></i> Aguardando</span>
+                                            {% else %}
+                                                <span class="bg-red-100 text-red-700 px-2.5 py-1 rounded font-black uppercase tracking-widest text-[9px]"><i class="fa-solid fa-ban mr-1"></i> Recusado</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-zinc-800 text-sm block">{{ pedido.cliente.first_name }} {{ pedido.cliente.last_name }}</span>
+                                    <span class="text-[10px] text-zinc-500 font-mono mt-1 block">{{ pedido.cliente.email }}</span>
+                                    <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest block mt-1">CPF: {{ pedido.cliente.cpf }}</span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="bg-zinc-50 border border-zinc-200 rounded p-3">
+                                        <ul class="text-xs text-zinc-700 font-medium space-y-1">
                                             {% for item in pedido.itens.all %}
-                                                <li class="flex items-start gap-2">
-                                                    <i class="fa-solid fa-shirt text-blue-500 mt-0.5"></i> 
-                                                    <span>{{ item.quantidade }}x {{ item.nome_produto }}</span>
+                                                <li class="flex items-center gap-2 border-b border-zinc-100 pb-1 last:border-0 last:pb-0">
+                                                    <span class="bg-zinc-800 text-white px-1.5 py-0.5 rounded text-[9px] font-black">{{ item.quantidade }}x</span> 
+                                                    {{ item.nome_produto }}
                                                 </li>
                                             {% empty %}
-                                                <li class="text-gray-400 italic">Itens não registrados (Pedido antigo).</li>
+                                                <li class="text-zinc-400 italic text-[10px]">Registro antigo. Itens indisponíveis.</li>
                                             {% endfor %}
                                         </ul>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 align-top">
-                                    <div class="font-medium text-gray-800">{{ pedido.cliente.username }}</div>
-                                    <div class="text-xs text-gray-500 mb-1">{{ pedido.cliente.email }}</div>
-                                    <div class="text-[10px] text-gray-400 uppercase">CPF: {{ pedido.cliente.cpf }}</div>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-black text-zinc-900">R$ {{ pedido.valor_total }}</div>
+                                    <div class="text-[9px] font-mono text-zinc-400 mt-2 p-1.5 bg-zinc-100 rounded inline-block max-w-full overflow-hidden text-ellipsis">
+                                        {% if pedido.id_pagamento_mp %}
+                                            MP: {{ pedido.id_pagamento_mp }}
+                                        {% else %}
+                                            S/ Registro MP
+                                        {% endif %}
+                                    </div>
                                 </td>
-                                
-                                <td class="px-6 py-4 align-top font-extrabold text-gray-900">
-                                    R$ {{ pedido.valor_total }}
-                                </td>
-                                
-                                <td class="px-6 py-4 align-top text-center">
-                                    {% if pedido.status == 'aprovado' %}
-                                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"><i class="fa-solid fa-check mr-1"></i> Aprovado</span>
-                                    {% elif pedido.status == 'pendente' %}
-                                        <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"><i class="fa-solid fa-clock mr-1"></i> Aguardando Pix</span>
-                                    {% else %}
-                                        <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"><i class="fa-solid fa-xmark mr-1"></i> Recusado</span>
-                                    {% endif %}
-                                </td>
-                                
-                                <td class="px-6 py-4 align-top text-right">
+
+                                <td class="px-6 py-4 text-right">
                                     {% if pedido.status == 'pendente' %}
-                                    <button onclick="mudarStatus({{ pedido.id }}, 'aprovado')" class="bg-black text-white text-xs font-bold px-3 py-2 rounded hover:bg-gray-800 transition-colors shadow-sm">
-                                        Forçar Aprovação
+                                    <button onclick="forcarAprovacao({{ pedido.id }})" class="bg-black text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded hover:bg-green-600 transition-colors shadow-sm">
+                                        Forçar Baixa
                                     </button>
                                     {% else %}
-                                    <span class="text-gray-400 text-sm font-medium"><i class="fa-solid fa-lock"></i> Finalizado</span>
+                                    <span class="text-zinc-300 text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-lock"></i> Selado</span>
                                     {% endif %}
                                 </td>
+
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-500">Nenhum pedido recebido ainda.</td>
+                                <td colspan="5" class="px-6 py-16 text-center">
+                                    <i class="fa-solid fa-truck-fast text-4xl text-zinc-300 mb-4 block"></i>
+                                    <p class="text-zinc-500 font-bold uppercase tracking-widest text-sm">Nenhuma encomenda no filtro atual.</p>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -124,12 +142,12 @@
     </div>
 
     <script>
-        async function mudarStatus(pedidoId, novoStatus) {
-            if(!confirm('Atenção: Você está forçando a aprovação manual deste Pix. Deseja continuar?')) return;
+        async function forcarAprovacao(pedidoId) {
+            if(!confirm('Atenção: Você está forçando a baixa manual desta encomenda. O Mercado Pago não será notificado, mas o status e o estoque no seu sistema serão alterados para APROVADO. Continuar?')) return;
             
             const formData = new FormData();
             formData.append('pedido_id', pedidoId);
-            formData.append('status', novoStatus);
+            formData.append('status', 'aprovado'); // Força a string 'aprovado'
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
             try {
@@ -142,10 +160,10 @@
                 if (data.status === 'sucesso') {
                     window.location.reload(); 
                 } else {
-                    alert('Erro: ' + data.mensagem);
+                    alert('Erro ao forçar aprovação: ' + data.mensagem);
                 }
             } catch (error) {
-                alert('Erro de conexão.');
+                alert('Falha na comunicação com o servidor local.');
             }
         }
     </script>

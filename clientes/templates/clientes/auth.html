@@ -3,82 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bravus | Acesso</title>
+    <title>Bravuz | Acesso Seguro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass-nav { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(12px); }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased flex flex-col min-h-screen">
+<body class="bg-zinc-50 font-sans antialiased flex flex-col min-h-screen selection:bg-yellow-400 selection:text-black">
 
-    <header class="bg-black text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center">
-            <a href="/" class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-                <i class="fa-solid fa-bolt text-yellow-400 text-2xl mr-2"></i>
-                <span class="font-bold text-2xl tracking-widest uppercase">Bravus</span>
-            </a>
+    <header class="glass-nav text-white fixed w-full z-40 transition-all duration-300">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center items-center h-20">
+                <a href="/" class="flex-shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity duration-300">
+                    <span class="font-black text-4xl tracking-tighter uppercase">Bravuz.</span>
+                </a>
+            </div>
         </div>
     </header>
 
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    <main class="flex-grow flex items-center justify-center p-4 pt-28">
+        <div class="max-w-4xl w-full bg-white rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-zinc-200">
             
-            <div class="w-full md:w-1/2 p-8 md:p-12 border-b md:border-b-0 md:border-r border-gray-100">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Já sou cliente</h2>
-                <p class="text-sm text-gray-500 mb-8">Acesse sua carteira e veja seus pedidos.</p>
+            <!-- ÁREA DE LOGIN -->
+            <div class="w-full md:w-1/2 p-8 md:p-12 border-b md:border-b-0 md:border-r border-zinc-200">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-black text-zinc-900 uppercase tracking-widest mb-1">Já Sou Cliente</h2>
+                    <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Acompanhe seus pedidos e cashback.</p>
+                </div>
 
                 {% if erro %}
-                <div class="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-100">
-                    <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ erro }}
+                <div class="bg-red-50 text-red-600 p-4 rounded-lg text-xs font-bold uppercase tracking-widest mb-6 border border-red-200 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ erro }}
                 </div>
                 {% endif %}
 
-                <form action="/clientes/auth/" method="POST" class="space-y-4">
+                <form action="/clientes/auth/" method="POST" class="space-y-5">
                     {% csrf_token %}
                     <input type="hidden" name="acao" value="login">
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-                        <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-gray-50">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Seu E-mail</label>
+                        <input type="email" name="email" required class="w-full border border-zinc-300 rounded p-3 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                        <input type="password" name="senha" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-gray-50">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Sua Senha</label>
+                        <input type="password" name="senha" required class="w-full border border-zinc-300 rounded p-3 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                     </div>
                     
-                    <button type="submit" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors mt-4">
-                        Entrar na Conta
+                    <button type="submit" class="w-full bg-black text-white font-black uppercase tracking-widest text-xs py-4 rounded hover:bg-yellow-400 hover:text-black transition-colors mt-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+                        Acessar Minha Conta
                     </button>
                 </form>
             </div>
 
-            <div class="w-full md:w-1/2 p-8 md:p-12 bg-gray-50">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Criar nova conta</h2>
-                <p class="text-sm text-gray-500 mb-8">Cadastre-se para acumular cashback.</p>
+            <!-- ÁREA DE CADASTRO -->
+            <div class="w-full md:w-1/2 p-8 md:p-12 bg-zinc-50">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-black text-zinc-900 uppercase tracking-widest mb-1">Criar Conta</h2>
+                    <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Cadastre-se e ganhe vantagens.</p>
+                </div>
 
                 <form action="/clientes/auth/" method="POST" class="space-y-4">
                     {% csrf_token %}
                     <input type="hidden" name="acao" value="cadastro">
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-                        <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-white">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">E-mail Pessoal</label>
+                        <input type="email" name="email" required class="w-full border border-zinc-300 rounded p-3 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
-                        <input type="text" name="cpf" placeholder="Apenas números" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-white">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">CPF (Apenas Números)</label>
+                        <input type="text" name="cpf" required class="w-full border border-zinc-300 rounded p-3 text-sm focus:ring-2 focus:ring-black outline-none bg-white font-mono">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Crie uma Senha</label>
-                        <input type="password" name="senha" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-white">
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Crie uma Senha</label>
+                        <input type="password" name="senha" required class="w-full border border-zinc-300 rounded p-3 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Código de Indicação (Opcional)</label>
-                        <input type="text" name="codigo_indicacao" value="{{ codigo_url }}" placeholder="Ex: BRV-1A2B3C" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-yellow-400 outline-none bg-yellow-50 text-yellow-900 font-mono uppercase">
-                        <p class="text-xs text-gray-400 mt-1">Tem um código? Insira aqui para apoiar um amigo.</p>
+                    <div class="bg-yellow-50 border border-yellow-200 p-4 rounded mt-4">
+                        <label class="block text-[10px] font-black text-yellow-800 uppercase tracking-widest mb-2">Tem Código de Indicação?</label>
+                        <input type="text" name="codigo_indicacao" value="{{ codigo_url }}" placeholder="EX: BRV-1234" class="w-full border border-yellow-300 rounded p-3 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white text-yellow-900 font-black uppercase tracking-widest text-center">
                     </div>
                     
-                    <button type="submit" class="w-full bg-yellow-400 text-black font-bold py-3 rounded-lg hover:bg-yellow-500 transition-colors mt-4 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        Cadastrar e Ganhar Vantagens
+                    <button type="submit" class="w-full bg-yellow-400 text-black font-black uppercase tracking-widest text-xs py-4 rounded hover:bg-black hover:text-white transition-colors mt-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+                        Cadastrar Agora
                     </button>
                 </form>
             </div>

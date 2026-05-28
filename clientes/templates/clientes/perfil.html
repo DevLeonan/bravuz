@@ -3,96 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bravus | Minha Conta</title>
+    <title>Bravuz | Área VIP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+<body class="bg-zinc-50 text-gray-900 font-sans antialiased selection:bg-yellow-400 selection:text-black">
 
-    <header class="bg-black text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-            <a href="/" class="flex items-center cursor-pointer">
-                <i class="fa-solid fa-bolt text-yellow-400 text-2xl mr-2"></i>
-                <span class="font-bold text-2xl tracking-widest uppercase">Bravus</span>
+    <header class="bg-black text-white shadow-md border-b border-zinc-800 sticky top-0 z-40">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <a href="/" class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+                <span class="font-black text-4xl tracking-tighter uppercase">Bravuz.</span>
             </a>
-            <a href="/clientes/sair/" class="text-sm text-gray-400 hover:text-white transition-colors">
-                Sair da conta <i class="fa-solid fa-arrow-right-from-bracket ml-1"></i>
+            <a href="/clientes/sair/" class="text-xs font-bold text-zinc-400 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2">
+                Sair <i class="fa-solid fa-arrow-right-from-bracket"></i>
             </a>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-10">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Olá, {{ request.user.email }}</h1>
-            <p class="text-gray-500">Gerencie seus pedidos, cashback e recompensas.</p>
+    <main class="max-w-5xl mx-auto px-4 py-12">
+        <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-200 pb-6">
+            <div>
+                <h1 class="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Área VIP</h1>
+                <p class="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-2">{{ request.user.email }}</p>
+            </div>
+            
+            <!-- BOTÃO MÁGICO DO PAINEL ADMIN -->
+            {% if request.user.is_staff %}
+            <a href="/painel/" class="bg-black text-yellow-400 px-6 py-3 rounded text-xs font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                <i class="fa-solid fa-gauge-high mr-2"></i> Acessar Painel de Controle
+            </a>
+            {% endif %}
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h2 class="text-lg font-bold text-gray-800">Sua Carteira</h2>
-                        <i class="fa-solid fa-wallet text-2xl text-blue-500"></i>
-                    </div>
-                    <p class="text-sm text-gray-500">Saldo disponível para a próxima compra.</p>
+        <!-- CARDS DE RECOMPENSA -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <!-- Carteira -->
+            <div class="bg-white rounded-xl shadow-sm border border-zinc-200 p-8 flex flex-col justify-between relative overflow-hidden group">
+                <div class="absolute -right-6 -top-6 text-zinc-100 group-hover:text-green-50 transition-colors duration-500">
+                    <i class="fa-solid fa-wallet text-8xl"></i>
                 </div>
-                <div class="mt-6">
-                    <span class="text-4xl font-extrabold text-green-600">R$ {{ request.user.carteira_cashback }}</span>
+                <div class="relative z-10">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Carteira Bravuz</p>
+                    <h3 class="text-5xl font-black text-green-600 mb-2">R$ {{ request.user.carteira_cashback }}</h3>
+                    <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Saldo disponível para uso imediato.</p>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h2 class="text-lg font-bold text-yellow-400">Indique e Ganhe</h2>
-                        <i class="fa-solid fa-bullhorn text-2xl text-yellow-400"></i>
+            <!-- Código de Indicação -->
+            <div class="bg-black rounded-xl shadow-lg border border-zinc-800 p-8 flex flex-col justify-between relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-bullhorn text-yellow-400"></i>
+                        <p class="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Indique e Ganhe</p>
                     </div>
-                    <p class="text-sm text-gray-300">Ganhe R$ 10,00 na sua carteira para cada amigo que comprar usando seu link.</p>
-                </div>
-                <div class="mt-6">
-                    <p class="text-xs text-gray-400 mb-1 uppercase font-bold tracking-wider">Seu Código Exclusivo:</p>
-                    <div class="bg-gray-800 rounded-lg p-3 flex justify-between items-center border border-gray-700">
-                        <span class="font-mono text-lg text-yellow-400 tracking-widest">{{ request.user.codigo_indicacao }}</span>
-                        <button class="text-gray-400 hover:text-white transition-colors" onclick="alert('Código copiado: {{ request.user.codigo_indicacao }}')">
-                            <i class="fa-regular fa-copy"></i>
+                    <p class="text-xs font-medium text-zinc-300 mb-6 w-5/6">Seus amigos ganham vantagens e você ganha <b>R$ 10,00</b> de saldo na carteira para cada compra aprovada.</p>
+                    
+                    <div class="bg-zinc-900 border border-zinc-700 rounded p-4 flex justify-between items-center">
+                        <div>
+                            <p class="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-1">Seu Código Pessoal</p>
+                            <span class="font-black text-2xl text-white tracking-widest font-mono">{{ request.user.codigo_indicacao }}</span>
+                        </div>
+                        <button onclick="navigator.clipboard.writeText('{{ request.user.codigo_indicacao }}'); alert('Código Copiado!');" class="bg-yellow-400 text-black w-10 h-10 rounded flex items-center justify-center hover:bg-white transition-colors">
+                            <i class="fa-regular fa-copy text-lg"></i>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
-            <h2 class="text-xl font-bold text-gray-900 mb-6 border-b pb-2">Meus Pedidos</h2>
+        <!-- LISTA DE PEDIDOS -->
+        <div class="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden">
+            <div class="px-8 py-6 border-b border-zinc-100 bg-zinc-50">
+                <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest">Histórico de Pedidos</h2>
+            </div>
             
             {% if pedidos %}
-                <div class="space-y-4">
+                <div class="divide-y divide-zinc-100">
                     {% for pedido in pedidos %}
-                    <div class="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="p-8 hover:bg-zinc-50 transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                         <div>
-                            <div class="flex items-center gap-3 mb-1">
-                                <span class="font-bold text-gray-900">Pedido #{{ pedido.id }}</span>
+                            <div class="flex items-center gap-4 mb-2">
+                                <span class="font-black text-2xl text-zinc-900">#{{ pedido.id }}</span>
                                 {% if pedido.status == 'aprovado' %}
-                                    <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Pagamento Aprovado</span>
+                                    <span class="bg-green-100 text-green-700 text-[10px] font-black px-3 py-1 rounded uppercase tracking-widest">Pago / Confirmado</span>
                                 {% elif pedido.status == 'pendente' %}
-                                    <span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Aguardando Pix</span>
+                                    <span class="bg-yellow-100 text-yellow-700 text-[10px] font-black px-3 py-1 rounded uppercase tracking-widest animate-pulse">Aguardando PIX</span>
                                 {% else %}
-                                    <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Recusado</span>
+                                    <span class="bg-red-100 text-red-700 text-[10px] font-black px-3 py-1 rounded uppercase tracking-widest">Recusado</span>
                                 {% endif %}
                             </div>
-                            <p class="text-xs text-gray-500">Realizado em {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Registrado em {{ pedido.criado_em|date:"d/m/Y às H:i" }}</p>
                         </div>
-                        <div class="text-right w-full sm:w-auto flex justify-between sm:block">
-                            <span class="text-sm text-gray-500 block sm:inline mr-2">Valor Total:</span>
-                            <span class="font-extrabold text-lg text-gray-900">R$ {{ pedido.valor_total }}</span>
+                        <div class="text-left sm:text-right w-full sm:w-auto">
+                            <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Valor Total</p>
+                            <span class="font-black text-3xl text-zinc-900">R$ {{ pedido.valor_total }}</span>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                    <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500 font-medium">Você ainda não fez nenhum pedido.</p>
-                    <a href="/" class="inline-block mt-4 text-blue-600 font-bold hover:underline">Ir para a vitrine</a>
+                <div class="text-center py-16 px-4">
+                    <i class="fa-solid fa-bag-shopping text-5xl text-zinc-200 mb-4 block"></i>
+                    <p class="text-zinc-500 font-bold uppercase tracking-widest text-sm">Você ainda não realizou compras.</p>
+                    <a href="/" class="inline-block mt-6 bg-black text-white px-8 py-3 rounded text-xs font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black transition-colors">Voltar para a Vitrine</a>
                 </div>
             {% endif %}
         </div>

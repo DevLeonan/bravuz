@@ -6,3 +6,4 @@ staticfiles/
 catalogo_fornecedor/
 venv/
 env/
+*.zip

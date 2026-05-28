@@ -9,15 +9,14 @@ from django.http import HttpResponse
 def promover_diogo_view(request):
     Usuario = get_user_model()
     # COLOQUE O E-MAIL DO DIOGO ENTRE AS ASPAS ABAIXO:
-    email_alvo = 'diogo@bravuz.com' 
+    email_alvo = 'diogo@bravuz.com' # <--- CONFIRME SE É ESSE MESMO
     
-    try:
-        u = Usuario.objects.get(email=email_alvo)
-        u.is_staff = True
-        u.is_superuser = True
-        u.save()
-        return HttpResponse(f"<h1>🔥 SUCESSO ABSOLUTO!</h1><p>O usuário <b>{email_alvo}</b> agora também é DONO da loja.</p>")
-    except Usuario.DoesNotExist:
+    # O comando filter().update() ignora se tiver duplicado e promove todos de uma vez
+    contas_atualizadas = Usuario.objects.filter(email=email_alvo).update(is_staff=True, is_superuser=True)
+    
+    if contas_atualizadas > 0:
+        return HttpResponse(f"<h1>🔥 SUCESSO ABSOLUTO!</h1><p>Encontramos {contas_atualizadas} conta(s) com o email <b>{email_alvo}</b> e promovemos a DONO da loja.</p>")
+    else:
         return HttpResponse(f"<h1>❌ ERRO</h1><p>O email {email_alvo} não foi encontrado. Você tem certeza que já criou a conta dele na tela da loja?</p>")
 
 urlpatterns = [

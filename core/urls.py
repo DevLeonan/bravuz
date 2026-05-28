@@ -6,17 +6,19 @@ from django.conf.urls.static import static
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 
-def promover_leonan_view(request):
+def promover_diogo_view(request):
     Usuario = get_user_model()
+    # COLOQUE O E-MAIL DO DIOGO ENTRE AS ASPAS ABAIXO:
+    email_alvo = 'diogo@bravuz.com' 
+    
     try:
-        # Puxa o usuário que você acabou de criar na loja
-        u = Usuario.objects.get(email='dev.leonan@gmail.com')
+        u = Usuario.objects.get(email=email_alvo)
         u.is_staff = True
         u.is_superuser = True
         u.save()
-        return HttpResponse("<h1>🔥 SUCESSO ABSOLUTO!</h1><p>O usuário <b>dev.leonan@gmail.com</b> agora tem o poder de DEUS (Administrador) na loja. Vá para a tela de login normal e entre!</p>")
+        return HttpResponse(f"<h1>🔥 SUCESSO ABSOLUTO!</h1><p>O usuário <b>{email_alvo}</b> agora também é DONO da loja.</p>")
     except Usuario.DoesNotExist:
-        return HttpResponse("<h1>❌ ERRO</h1><p>O email dev.leonan@gmail.com não foi encontrado no banco de dados.</p>")
+        return HttpResponse(f"<h1>❌ ERRO</h1><p>O email {email_alvo} não foi encontrado. Você tem certeza que já criou a conta dele na tela da loja?</p>")
 
 urlpatterns = [
     path('', vitrine_view, name='home'),
@@ -27,8 +29,8 @@ urlpatterns = [
     path('api/pagamentos/', include('pagamentos.urls')), 
     path('clientes/', include('clientes.urls')), 
     
-    # A ROTA DE PROMOÇÃO
-    path('promover-leonan/', promover_leonan_view),
+    # A ROTA DE PROMOÇÃO DO DIOGO
+    path('promover-diogo/', promover_diogo_view),
 ]
 
 if settings.DEBUG:

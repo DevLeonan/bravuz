@@ -83,7 +83,7 @@
                             <span>Subtotal Peças</span>
                             <span id="checkout-subtotal" class="font-medium text-gray-900">R$ 0,00</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between items-center">
                             <span>Entrega</span>
                             <span id="texto-frete-resumo" class="font-medium text-blue-600 font-bold">Calcule o CEP</span>
                         </div>
@@ -164,6 +164,11 @@
             carrinho.splice(index, 1);
             localStorage.setItem('bravus_carrinho', JSON.stringify(carrinho));
             carregarResumo();
+            
+            // Recalcula o frete automaticamente se o usuário remover um item e cair da regra dos 300
+            if(document.getElementById('input-cep').value.length >= 8) {
+                buscarFrete();
+            }
         }
 
         async function buscarFrete() {
@@ -180,16 +185,26 @@
             textoEndereco.className = "text-xs text-blue-500 font-bold mt-1";
 
             try {
-                const response = await fetch(`/api/loja/frete/${cep}/`);
+                // AQUI ESTÁ A INTEGRAÇÃO COM A REGRA DE OURO DOS 300 REAIS
+                const response = await fetch(`/api/loja/frete/${cep}/?total=${totalCarrinho}`);
                 const data = await response.json();
 
                 if (data.sucesso) {
                     valorFreteGlobal = data.valor_frete;
-                    textoEndereco.innerText = `${data.endereco} (Chega em ${data.prazo})`;
-                    textoEndereco.className = "text-xs text-green-600 font-bold mt-1";
                     
-                    document.getElementById('texto-frete-resumo').innerText = `R$ ${valorFreteGlobal.toFixed(2).replace('.', ',')}`;
-                    document.getElementById('texto-frete-resumo').classList.replace('text-blue-600', 'text-gray-900');
+                    if (valorFreteGlobal === 0) {
+                        // Design premium para o Frete Grátis
+                        textoEndereco.innerHTML = `${data.endereco} <br><span class="text-green-600 font-black uppercase mt-1 inline-block tracking-wider"><i class="fa-solid fa-gift"></i> ${data.prazo}</span>`;
+                        textoEndereco.className = "text-xs text-green-600 mt-2 block";
+                        
+                        document.getElementById('texto-frete-resumo').innerHTML = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs uppercase tracking-widest font-black">Grátis</span>`;
+                    } else {
+                        textoEndereco.innerText = `${data.endereco} (Chega em ${data.prazo})`;
+                        textoEndereco.className = "text-xs text-green-600 font-bold mt-1";
+                        
+                        document.getElementById('texto-frete-resumo').innerText = `R$ ${valorFreteGlobal.toFixed(2).replace('.', ',')}`;
+                        document.getElementById('texto-frete-resumo').className = "font-medium text-gray-900 font-bold";
+                    }
                     
                     atualizarTotais();
                 } else {
@@ -200,7 +215,7 @@
                     atualizarTotais();
                 }
             } catch (error) {
-                textoEndereco.innerText = "Erro ao calcular frete. O servidor pode estar desligado.";
+                textoEndereco.innerText = "Erro de rede. Use um CEP padrão ou tente novamente.";
                 textoEndereco.className = "text-xs text-red-500 font-bold mt-1";
             }
         }
@@ -218,7 +233,7 @@
             
             if (vaiUsarCashback && saldoCashback > 0) {
                 if (saldoCashback >= valorFinal) {
-                    valorFinal = 1.00; // Regra Mercado Pago
+                    valorFinal = 1.00; // Regra Mercado Pago: Mínimo de 1 real na transação PIX
                 } else {
                     valorFinal = valorFinal - saldoCashback;
                 }
@@ -234,7 +249,9 @@
         }
 
         document.getElementById('btn-gerar-pix').addEventListener('click', async function() {
-            if (valorFreteGlobal === 0) {
+            // Permite pagar se o frete for grátis (0) mas exige CEP preenchido e calculado
+            const textoEnd = document.getElementById('texto-endereco').innerText;
+            if (valorFreteGlobal === 0 && !textoEnd.includes('Chega em') && !textoEnd.includes('Frete Grátis')) {
                 alert("Por favor, calcule o frete digitando seu CEP antes de pagar.");
                 document.getElementById('input-cep').focus();
                 return;
@@ -339,7 +356,6 @@
         function iniciarVerificacaoPagamento(pedidoId) {
             checagemPagamentoIntervalo = setInterval(async () => {
                 try {
-                    // Nós precisaremos criar esta pequena rota no views.py depois
                     const response = await fetch(`/api/pagamentos/status/${pedidoId}/`);
                     const data = await response.json();
 

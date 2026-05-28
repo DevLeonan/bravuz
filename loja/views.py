@@ -47,33 +47,60 @@ def calcular_frete(request, cep):
     if len(cep_limpo) != 8:
         return JsonResponse({'erro': 'CEP inválido'}, status=400)
 
+    # Capta o valor total do carrinho que o JS pode enviar na URL (ex: /frete/01001000/?total=350.00)
     try:
-        # Consulta a API gratuita do ViaCEP para descobrir o endereço
-        resposta = requests.get(f'https://viacep.com.br/ws/{cep_limpo}/json/')
+        total_carrinho = float(request.GET.get('total', 0.0))
+    except ValueError:
+        total_carrinho = 0.0
+
+    try:
+        # Consulta a API gratuita do ViaCEP com limite de tempo (timeout de 5s) para não travar seu site
+        resposta = requests.get(f'https://viacep.com.br/ws/{cep_limpo}/json/', timeout=5)
         dados_cep = resposta.json()
         
         if 'erro' in dados_cep:
             return JsonResponse({'erro': 'CEP não encontrado'}, status=404)
             
         uf = dados_cep.get('uf')
+        endereco_formatado = f"{dados_cep.get('logradouro')}, {dados_cep.get('bairro')} - {dados_cep.get('localidade')}/{uf}"
         
-        # Tabela de Frete Inteligente da Bravus (Exemplo)
-        if uf == 'SP':
-            valor_frete = 15.00
-            prazo = '2 a 4 dias úteis'
-        elif uf in ['RJ', 'MG', 'ES', 'PR', 'SC', 'RS']:
-            valor_frete = 22.00
-            prazo = '4 a 7 dias úteis'
+        # 👑 REGRA DE OURO: Acima de 300 reais, frete grátis ignorando a região
+        if total_carrinho >= 300.00:
+            valor_frete = 0.00
+            prazo = 'Frete Grátis (Acima de R$ 300)'
         else:
-            valor_frete = 35.00
-            prazo = '7 a 12 dias úteis'
+            # Tabela de Frete Inteligente da Bravus
+            if uf == 'SP':
+                valor_frete = 15.00
+                prazo = '2 a 4 dias úteis'
+            elif uf in ['RJ', 'MG', 'ES', 'PR', 'SC', 'RS']:
+                valor_frete = 22.00
+                prazo = '4 a 7 dias úteis'
+            else:
+                valor_frete = 35.00
+                prazo = '7 a 12 dias úteis'
             
         return JsonResponse({
             'sucesso': True,
-            'endereco': f"{dados_cep.get('logradouro')}, {dados_cep.get('bairro')} - {dados_cep.get('localidade')}/{uf}",
+            'endereco': endereco_formatado,
             'valor_frete': valor_frete,
             'prazo': prazo
         })
         
     except requests.exceptions.RequestException:
-        return JsonResponse({'erro': 'Falha ao consultar os Correios.'}, status=500)
+        # 🛡️ TRAVA DE SEGURANÇA: ViaCEP caiu ou a Railway foi bloqueada.
+        # NUNCA impedimos o cliente de comprar. O erro silencioso entra em ação.
+        
+        if total_carrinho >= 300.00:
+            valor_frete_emergencia = 0.00
+            prazo_emergencia = 'Frete Grátis (Acima de R$ 300)'
+        else:
+            valor_frete_emergencia = 28.50 # Frete fixo nacional de emergência (ajuste como preferir)
+            prazo_emergencia = 'Prazo padrão nacional (7 a 12 dias úteis)'
+            
+        return JsonResponse({
+            'sucesso': True,
+            'endereco': 'Não conseguimos puxar a rua automaticamente. Por favor, digite seu endereço completo.',
+            'valor_frete': valor_frete_emergencia,
+            'prazo': prazo_emergencia
+        })

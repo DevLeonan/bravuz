@@ -130,6 +130,9 @@
                                         <div>
                                             <span class="font-bold text-zinc-900 text-sm block">{{ produto.nome }}</span>
                                             <span class="text-[9px] text-zinc-400 font-mono">ID: #{{ produto.id }}</span>
+                                            {% if produto.tamanhos %}
+                                            <span class="text-[9px] bg-zinc-200 text-zinc-600 px-1 py-0.5 rounded font-bold uppercase tracking-widest ml-1">Tams: {{ produto.tamanhos }}</span>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -153,7 +156,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    <button onclick="abrirModalEdicao('{{ produto.id }}', '{{ produto.nome }}', '{{ produto.preco|stringformat:'f' }}', '{{ produto.estoque }}', '{{ produto.genero }}', '{{ produto.categoria.id }}', '{{ produto.promocao_relampago }}', '{{ produto.preco_promocional|default_if_none:'' }}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-colors p-2 rounded mr-2">
+                                    <button onclick="abrirModalEdicao('{{ produto.id }}', '{{ produto.nome }}', '{{ produto.preco|stringformat:'f' }}', '{{ produto.estoque }}', '{{ produto.genero }}', '{{ produto.categoria.id }}', '{{ produto.promocao_relampago }}', '{{ produto.preco_promocional|default_if_none:'' }}', '{{ produto.tamanhos|default_if_none:'' }}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-colors p-2 rounded mr-2">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                     <form action="/painel/produtos/" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar {{ produto.nome }}?');" class="inline">
@@ -222,6 +225,11 @@
                     </select>
                 </div>
 
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Tamanhos Disponíveis</label>
+                    <input type="text" name="tamanhos" placeholder="Exemplo: P, M, G, GG (Deixe em branco se for tamanho único)" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                </div>
+
                 <div class="md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200 grid grid-cols-2 gap-4 items-center">
                     <label class="flex items-center cursor-pointer gap-2">
                         <input type="checkbox" name="promocao_relampago" class="w-4 h-4 text-black border-zinc-300 rounded focus:ring-black">
@@ -283,6 +291,11 @@
                         <option value="M">Masculino</option>
                         <option value="F">Feminino</option>
                     </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Tamanhos Disponíveis</label>
+                    <input type="text" name="tamanhos" id="edit-tamanhos" placeholder="Exemplo: P, M, G, GG (Deixe em branco se for tamanho único)" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                 </div>
 
                 <div class="md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200 grid grid-cols-2 gap-4 items-center">
@@ -378,13 +391,15 @@
             document.getElementById(idModal).classList.remove('modal-aberto');
         }
 
-        function abrirModalEdicao(id, nome, preco, estoque, genero, categoriaId, isPromo, precoPromo) {
+        // Função do Javascript atualizada para receber também o campo 'tamanhos'
+        function abrirModalEdicao(id, nome, preco, estoque, genero, categoriaId, isPromo, precoPromo, tamanhos) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nome').value = nome;
             document.getElementById('edit-preco').value = parseFloat(preco.replace(',', '.')).toFixed(2);
             document.getElementById('edit-estoque').value = estoque;
             document.getElementById('edit-genero').value = genero;
             document.getElementById('edit-categoria').value = categoriaId;
+            document.getElementById('edit-tamanhos').value = tamanhos;
             
             const promoCheck = document.getElementById('edit-promo-check');
             promoCheck.checked = (isPromo === 'True');

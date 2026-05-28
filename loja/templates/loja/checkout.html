@@ -140,15 +140,23 @@
                     ? `<img src="${item.imagem}" class="w-full h-full object-cover">` 
                     : `<i class="fa-solid fa-shirt text-gray-300"></i>`;
 
+                // AQUI NÓS LÊMOS O TAMANHO QUE VEIO DO CARRINHO (OU COLOCAMOS "ÚNICO" SE NÃO TIVER)
+                let tamanhoHtml = item.tamanho 
+                    ? `<span class="bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mt-1 inline-block border border-gray-200">TAM: ${item.tamanho}</span>`
+                    : '';
+
                 lista.innerHTML += `
                     <div class="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
                         <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden border border-gray-200">
+                            <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center overflow-hidden border border-gray-200 flex-shrink-0">
                                 ${imgHtml}
                             </div>
-                            <span class="font-bold text-gray-800 text-sm">${item.nome}</span>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-800 text-sm leading-tight">${item.nome}</span>
+                                <div>${tamanhoHtml}</div>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4 flex-shrink-0">
                             <span class="font-bold text-gray-900 text-sm">R$ ${item.preco.toFixed(2).replace('.', ',')}</span>
                             <button onclick="removerItem(${index})" class="text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
@@ -185,7 +193,6 @@
             textoEndereco.className = "text-xs text-blue-500 font-bold mt-1";
 
             try {
-                // AQUI ESTÁ A INTEGRAÇÃO COM A REGRA DE OURO DOS 300 REAIS
                 const response = await fetch(`/api/loja/frete/${cep}/?total=${totalCarrinho}`);
                 const data = await response.json();
 
@@ -193,7 +200,6 @@
                     valorFreteGlobal = data.valor_frete;
                     
                     if (valorFreteGlobal === 0) {
-                        // Design premium para o Frete Grátis
                         textoEndereco.innerHTML = `${data.endereco} <br><span class="text-green-600 font-black uppercase mt-1 inline-block tracking-wider"><i class="fa-solid fa-gift"></i> ${data.prazo}</span>`;
                         textoEndereco.className = "text-xs text-green-600 mt-2 block";
                         
@@ -249,7 +255,6 @@
         }
 
         document.getElementById('btn-gerar-pix').addEventListener('click', async function() {
-            // Permite pagar se o frete for grátis (0) mas exige CEP preenchido e calculado
             const textoEnd = document.getElementById('texto-endereco').innerText;
             if (valorFreteGlobal === 0 && !textoEnd.includes('Chega em') && !textoEnd.includes('Frete Grátis')) {
                 alert("Por favor, calcule o frete digitando seu CEP antes de pagar.");
@@ -264,7 +269,7 @@
             btn.classList.add('opacity-75');
 
             try {
-                // 1. Cria o Pedido no banco da Bravus
+                // Ao criar o pedido, os itens já vão com o 'tamanho' embutido para o backend
                 const resPedido = await fetch('/api/pagamentos/criar-pedido/', {
                     method: 'POST',
                     headers: {
@@ -282,7 +287,6 @@
                 
                 if (!resPedido.ok) throw new Error(dadosPedido.erro || 'Falha ao registrar pedido.');
 
-                // 2. Aciona o Mercado Pago
                 const resPix = await fetch(`/api/pagamentos/criar-pix/${dadosPedido.pedido_id}/`, {
                     method: 'POST',
                     headers: { 'X-CSRFToken': '{{ csrf_token }}' }
@@ -293,7 +297,6 @@
                 if (resPix.ok && dadosPix.status === 'sucesso') {
                     localStorage.removeItem('bravus_carrinho');
                     
-                    // Desenha a tela premium de QR Code
                     document.getElementById('area-pagamento').innerHTML = `
                         <div class="bg-white border-2 border-yellow-400 rounded-xl p-6 text-center shadow-lg animate-fade-in relative overflow-hidden">
                             <div class="absolute inset-0 bg-yellow-50 opacity-50 z-0"></div>
@@ -327,7 +330,6 @@
                         </div>
                     `;
 
-                    // 3. INICIA A ROTINA DE VERIFICAÇÃO (LONG POLLING)
                     iniciarVerificacaoPagamento(dadosPix.pedido_id);
 
                 } else {
@@ -344,7 +346,6 @@
             }
         });
 
-        // Função utilitária para copiar o PIX
         function copiarPix() {
             const texto = document.getElementById('texto-pix');
             texto.select();
@@ -352,7 +353,6 @@
             alert('Código PIX Copiado!');
         }
 
-        // Função que fica "escutando" o backend para saber se o PIX caiu
         function iniciarVerificacaoPagamento(pedidoId) {
             checagemPagamentoIntervalo = setInterval(async () => {
                 try {
@@ -362,7 +362,6 @@
                     if (data.status === 'aprovado') {
                         clearInterval(checagemPagamentoIntervalo);
                         
-                        // Transforma a tela em SUCESSO VERDE!
                         document.getElementById('area-pagamento').innerHTML = `
                             <div class="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center shadow-2xl transform transition-all">
                                 <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-bounce">
@@ -383,7 +382,7 @@
                 } catch (error) {
                     console.log("Aguardando verificação...", error);
                 }
-            }, 5000); // Checa a cada 5 segundos
+            }, 5000);
         }
     </script>
 </body>

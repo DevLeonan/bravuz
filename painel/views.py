@@ -95,13 +95,14 @@ def gerenciar_produtos(request):
             imagem = request.FILES.get('imagem')
             estoque = request.POST.get('estoque', 0)
             genero = request.POST.get('genero', 'U')
+            tamanhos = request.POST.get('tamanhos', '') # <-- Captura do novo campo
             
             categoria = Categoria.objects.get(id=categoria_id)
             Produto.objects.create(
                 nome=nome, preco=preco, estoque=estoque, genero=genero,
                 categoria=categoria, descricao="Adicionado via Painel de Controlo",
                 promocao_relampago=promocao_relampago, preco_promocional=preco_promocional,
-                imagem=imagem
+                imagem=imagem, tamanhos=tamanhos # <-- Salva no banco
             )
             
         elif acao == 'editar':
@@ -113,6 +114,7 @@ def gerenciar_produtos(request):
             produto.genero = request.POST.get('genero', produto.genero)
             produto.promocao_relampago = request.POST.get('promocao_relampago') == 'on'
             produto.preco_promocional = request.POST.get('preco_promocional') or None
+            produto.tamanhos = request.POST.get('tamanhos', '') # <-- Captura do novo campo na edição
             
             categoria_id = request.POST.get('categoria')
             produto.categoria = Categoria.objects.get(id=categoria_id)

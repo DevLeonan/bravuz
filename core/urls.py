@@ -6,26 +6,17 @@ from django.conf.urls.static import static
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 
-def criar_donos(request):
+def promover_leonan_view(request):
     Usuario = get_user_model()
-    
-    # Cria o Leonan
-    if not Usuario.objects.filter(email='leonan@bravuz.com').exists():
-        Usuario.objects.create_superuser(
-            username='leonan_admin', 
-            email='leonan@bravuz.com', 
-            password='BravuzLeonan2026!'
-        )
-        
-    # Cria o Diogo
-    if not Usuario.objects.filter(email='diogo@bravuz.com').exists():
-        Usuario.objects.create_superuser(
-            username='diogo_admin', 
-            email='diogo@bravuz.com', 
-            password='BravuzDiogo2026!'
-        )
-        
-    return HttpResponse("CONTAS DE DONO CRIADAS COM SUCESSO NO POSTGRES! Pode apagar este código, dar git push e fazer o login na loja.")
+    try:
+        # Puxa o usuário que você acabou de criar na loja
+        u = Usuario.objects.get(email='dev.leonan@gmail.com')
+        u.is_staff = True
+        u.is_superuser = True
+        u.save()
+        return HttpResponse("<h1>🔥 SUCESSO ABSOLUTO!</h1><p>O usuário <b>dev.leonan@gmail.com</b> agora tem o poder de DEUS (Administrador) na loja. Vá para a tela de login normal e entre!</p>")
+    except Usuario.DoesNotExist:
+        return HttpResponse("<h1>❌ ERRO</h1><p>O email dev.leonan@gmail.com não foi encontrado no banco de dados.</p>")
 
 urlpatterns = [
     path('', vitrine_view, name='home'),
@@ -35,10 +26,10 @@ urlpatterns = [
     path('api/loja/', include('loja.urls')), 
     path('api/pagamentos/', include('pagamentos.urls')), 
     path('clientes/', include('clientes.urls')), 
-    path('forcar-admin/', criar_donos),
+    
+    # A ROTA DE PROMOÇÃO
+    path('promover-leonan/', promover_leonan_view),
 ]
-
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.db.models import Sum, Count, Avg, Q
 from django.utils import timezone
+from django.utils.text import slugify
 from loja.models import Produto, Categoria
 from pagamentos.models import Pedido, ItemPedido
 from clientes.models import Cliente
@@ -104,6 +105,19 @@ def gerenciar_produtos(request):
                 promocao_relampago=promocao_relampago, preco_promocional=preco_promocional,
                 imagem=imagem, tamanhos=tamanhos
             )
+
+        # 👑 NOVA FUNÇÃO: CRIAR CATEGORIA DIRETO PELO PAINEL
+        elif acao == 'criar_categoria':
+            nome_categoria = request.POST.get('nome_categoria')
+            if nome_categoria:
+                slug_categoria = slugify(nome_categoria)
+                # Só cria se já não existir uma com a mesma URL/Slug
+                if not Categoria.objects.filter(slug=slug_categoria).exists():
+                    Categoria.objects.create(
+                        nome=nome_categoria.strip().title(),
+                        slug=slug_categoria
+                    )
+            return redirect('/painel/produtos/')
             
         elif acao == 'editar':
             produto_id = request.POST.get('produto_id')
@@ -130,7 +144,7 @@ def gerenciar_produtos(request):
         elif acao == 'limpar_catalogo':
             Produto.objects.all().delete()
             
-        # SUPER FUNÇÃO: Alteração de Preços em Massa (Markup/Desconto por Categoria)
+        # SUPER FUNÇÃO: Alteração de Preços em Massa
         elif acao == 'ajuste_em_massa':
             categoria_filter = request.POST.get('categoria_massa')
             tipo_ajuste = request.POST.get('tipo_ajuste') 
@@ -168,7 +182,7 @@ def gerenciar_produtos(request):
                     prod.preco_promocional = prod.preco * (1 - porcentagem_desc)
                     prod.save()
 
-        # MOTOR DE IMPORTAÇÃO CONJUGADO ATUALIZADO (CSV + IMAGENS EM ZIP + TAMANHOS)
+        # MOTOR DE IMPORTAÇÃO CONJUGADO (CSV CORRIGIDO)
         elif acao == 'importar_csv':
             arquivo_csv = request.FILES.get('arquivo_csv')
             arquivo_zip = request.FILES.get('arquivo_zip')
@@ -211,12 +225,10 @@ def gerenciar_produtos(request):
                             if ',' in preco_str and '.' in preco_str: 
                                 preco_str = preco_str.replace('.', '')
                             preco_str = preco_str.replace(',', '.').strip()
-                            nome_cat = linha[2].strip()
+                            nome_cat = inline[2].strip() if 'inline' in locals() else linha[2].strip()
                             caminho_imagem_original = linha[3].strip() if len(linha) > 3 else ""
-                            genero_csv = linha[4].strip().upper() if len(linha) > 4 else 'U'
+                            genero_csv = linha[4].strip().upper() if len(linha) > 4 else 'U' # 🔧 CORRIGIDO AQUI DE INLINE PARA LINHA
                             estoque_csv = int(linha[5].strip()) if len(linha) > 5 and linha[5].strip().isdigit() else 10
-                            
-                            # Suporte para a 7ª coluna opcional de tamanhos na planilha Excel/CSV
                             tamanhos_csv = linha[6].strip() if len(linha) > 6 else ""
                             
                             if genero_csv not in ['M', 'F', 'U']: genero_csv = 'U'
@@ -225,11 +237,11 @@ def gerenciar_produtos(request):
                                 preco_final = Decimal(preco_str)
                                 if preco_final > Decimal('99999.00'): preco_final = Decimal('0.00')
                                 
-                                slug_cat = nome_cat.lower().strip().replace(' ', '-')
+                                slug_cat = slugify(nome_cat)
                                 categoria, _ = Categoria.objects.get_or_create(slug=slug_cat, defaults={'nome': nome_cat.title()})
                                 
                                 produto_criado = Produto.objects.create(
-                                    nome=nome_peca, preco=preco_final, categoria=categoria,
+                                    nome=nome_peca, preco=preco_final, category=categoria,
                                     estoque=estoque_csv, genero=genero_csv, tamanhos=tamanhos_csv, 
                                     descricao="Importado em lote via CSV"
                                 )

@@ -57,7 +57,7 @@
 
         <main class="p-8 w-full max-w-7xl mx-auto space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <button onclick="abrirModal('modal-add')" class="bg-black text-white p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-zinc-800 transition-colors group">
                     <div class="bg-zinc-800 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-yellow-400 group-hover:text-black transition-colors">
                         <i class="fa-solid fa-plus"></i>
@@ -65,6 +65,16 @@
                     <div class="text-left">
                         <p class="text-xs font-black uppercase tracking-widest">Nova Peça</p>
                         <p class="text-[10px] text-zinc-400">Lançamento Único</p>
+                    </div>
+                </button>
+
+                <button onclick="abrirModal('modal-add-categoria')" class="bg-zinc-900 text-white p-4 rounded-xl shadow-sm flex items-center gap-4 hover:bg-zinc-800 transition-colors group">
+                    <div class="bg-zinc-800 w-10 h-10 rounded-full flex items-center justify-center group-hover:bg-yellow-400 group-hover:text-black transition-colors">
+                        <i class="fa-solid fa-folder-plus"></i>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-black uppercase tracking-widest">Nova Categoria</p>
+                        <p class="text-[10px] text-zinc-400">Organizar Vitrine</p>
                     </div>
                 </button>
 
@@ -97,7 +107,7 @@
                         </div>
                         <div class="text-left">
                             <p class="text-xs font-black uppercase tracking-widest">Zona de Risco</p>
-                            <p class="text-[10px] opacity-80">Limpar Todo o Catálogo</p>
+                            <p class="text-[10px] opacity-80">Limpar Catálogo</p>
                         </div>
                     </button>
                 </form>
@@ -174,7 +184,6 @@
                                 <td colspan="5" class="px-6 py-16 text-center">
                                     <i class="fa-solid fa-box-open text-4xl text-zinc-300 mb-4 block"></i>
                                     <p class="text-zinc-500 font-bold uppercase tracking-widest text-sm">Seu estoque está vazio.</p>
-                                    <p class="text-zinc-400 text-xs mt-1">Adicione uma peça manualmente ou faça upload de uma planilha.</p>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -205,7 +214,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Estoque Inicial (Unidades)</label>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Estoque Inicial</label>
                     <input type="number" name="estoque" value="10" required class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                 </div>
 
@@ -217,7 +226,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Departamento (Gênero)</label>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Departamento</label>
                     <select name="genero" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-white">
                         <option value="U">Unissex</option>
                         <option value="M">Masculino</option>
@@ -236,7 +245,7 @@
                         <span class="text-xs font-black text-yellow-800 uppercase tracking-wide">Ativar Promoção</span>
                     </label>
                     <div>
-                        <input type="number" step="0.01" name="preco_promocional" placeholder="R$ Preço com Desconto" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
+                        <input type="number" step="0.01" name="preco_promocional" placeholder="R$ Preço Desconto" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
                     </div>
                 </div>
 
@@ -248,6 +257,23 @@
                 <div class="md:col-span-2 pt-4 flex justify-end">
                     <button type="submit" class="bg-black text-white font-black uppercase tracking-widest text-xs py-3 px-8 rounded hover:bg-yellow-400 hover:text-black transition-colors shadow-md w-full">Adicionar ao Estoque</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-add-categoria" class="fixed inset-0 bg-black bg-opacity-70 z-50 justify-center items-center hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+            <button onclick="fecharModal('modal-add-categoria')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-4 border-b pb-2"><i class="fa-solid fa-folder-plus text-yellow-500 mr-2"></i> Criar Nova Categoria</h2>
+            
+            <form method="POST" action="/painel/produtos/" class="space-y-4 mt-4">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="criar_categoria">
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Nome da Categoria (Ex: Camisetas, Bones, Jeans)</label>
+                    <input type="text" name="nome_categoria" required placeholder="Ex: Bermudas Cargo" class="w-full border border-zinc-300 rounded p-2.5 text-sm bg-zinc-50 focus:ring-2 focus:ring-black outline-none font-bold">
+                </div>
+                <button type="submit" class="w-full bg-black text-white px-6 py-3 font-black uppercase tracking-widest text-xs rounded hover:bg-yellow-400 hover:text-black transition-colors mt-2 shadow-md">Salvar Categoria</button>
             </form>
         </div>
     </div>
@@ -295,7 +321,7 @@
 
                 <div class="md:col-span-2">
                     <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Tamanhos Disponíveis</label>
-                    <input type="text" name="tamanhos" id="edit-tamanhos" placeholder="Exemplo: P, M, G, GG (Deixe em branco se for tamanho único)" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
+                    <input type="text" name="tamanhos" id="edit-tamanhos" class="w-full border border-zinc-300 rounded p-2 text-sm focus:ring-2 focus:ring-black outline-none bg-zinc-50">
                 </div>
 
                 <div class="md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200 grid grid-cols-2 gap-4 items-center">
@@ -304,7 +330,7 @@
                         <span class="text-xs font-black text-yellow-800 uppercase tracking-wide">Ativar Promoção</span>
                     </label>
                     <div>
-                        <input type="number" step="0.01" name="preco_promocional" id="edit-promo-preco" placeholder="R$ Preço Desconto" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
+                        <input type="number" step="0.01" name="preco_promocional" id="edit-promo-preco" class="w-full border border-yellow-300 rounded p-2 text-sm focus:ring-2 focus:ring-yellow-500 outline-none bg-white">
                     </div>
                 </div>
 
@@ -324,15 +350,6 @@
         <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative">
             <button onclick="fecharModal('modal-csv')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
             <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-2 border-b pb-2"><i class="fa-solid fa-file-csv text-blue-500 mr-2"></i> Carga em Lote</h2>
-            
-            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 mt-4">
-                <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">A ordem das colunas (.CSV):</p>
-                <ol class="text-xs text-blue-900 font-mono bg-white p-2 rounded border border-blue-200">
-                    <li>1. Nome | 2. Preço | 3. Categoria</li>
-                    <li>4. Nome da Foto | 5. Gênero (M/F/U) | 6. Estoque</li>
-                </ol>
-            </div>
-            
             <form method="POST" action="/painel/produtos/" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="importar_csv">
@@ -341,7 +358,7 @@
                     <input type="file" name="arquivo_csv" accept=".csv" required class="border border-zinc-300 rounded p-2 w-full text-sm bg-zinc-50">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Fotos Compactadas (.ZIP) - Opcional</label>
+                    <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Fotos (.ZIP) - Opcional</label>
                     <input type="file" name="arquivo_zip" accept=".zip" class="border border-zinc-300 rounded p-2 w-full text-sm bg-zinc-50">
                 </div>
                 <button type="submit" class="w-full bg-black text-white px-6 py-3 font-black uppercase tracking-widest text-xs rounded hover:bg-zinc-800 transition-colors mt-2">Iniciar Importação</button>
@@ -353,13 +370,12 @@
         <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-6 relative">
             <button onclick="fecharModal('modal-massa')" class="absolute top-4 right-4 text-zinc-400 hover:text-black"><i class="fa-solid fa-xmark text-2xl"></i></button>
             <h2 class="text-lg font-black text-zinc-900 uppercase tracking-widest mb-4 border-b pb-2"><i class="fa-solid fa-tags text-purple-500 mr-2"></i> Alteração em Bloco</h2>
-            
             <form method="POST" action="/painel/produtos/" class="space-y-4 mt-4">
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="ajuste_em_massa">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria (Marca)</label>
+                        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Categoria</label>
                         <select name="categoria_massa" class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50">
                             <option value="todas">Todas as Peças</option>
                             {% for cat in categorias %}<option value="{{ cat.id }}">{{ cat.nome }}</option>{% endfor %}
@@ -375,7 +391,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Porcentagem (%)</label>
-                    <input type="number" name="porcentagem" min="1" max="100" placeholder="Ex: 10 para aplicar 10%" required class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50 focus:ring-2 focus:ring-black">
+                    <input type="number" name="porcentagem" min="1" max="100" required class="w-full border border-zinc-300 rounded p-2 text-sm bg-zinc-50 focus:ring-2 focus:ring-black">
                 </div>
                 <button type="submit" class="w-full bg-purple-600 text-white px-6 py-3 font-black uppercase tracking-widest text-xs rounded hover:bg-purple-700 transition-colors mt-2">Processar Recálculo</button>
             </form>
@@ -391,7 +407,6 @@
             document.getElementById(idModal).classList.remove('modal-aberto');
         }
 
-        // Função do Javascript atualizada para receber também o campo 'tamanhos'
         function abrirModalEdicao(id, nome, preco, estoque, genero, categoriaId, isPromo, precoPromo, tamanhos) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nome').value = nome;
@@ -403,7 +418,6 @@
             
             const promoCheck = document.getElementById('edit-promo-check');
             promoCheck.checked = (isPromo === 'True');
-            
             document.getElementById('edit-promo-preco').value = precoPromo !== 'None' ? parseFloat(precoPromo.replace(',', '.')).toFixed(2) : '';
             
             abrirModal('modal-editar');

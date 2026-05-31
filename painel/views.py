@@ -17,6 +17,8 @@ import zipfile
 import tempfile
 import shutil
 
+
+
 def checar_admin(user):
     return user.is_authenticated and user.is_staff
 
